@@ -1,0 +1,62 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.developer27.holocube.transmitter"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="36" />
+10
+11    <application
+11-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:4:5-29:19
+12        android:allowBackup="false"
+12-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:5:9-36
+13        android:dataExtractionRules="@xml/data_extraction_rules"
+13-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:7:9-65
+14        android:debuggable="true"
+15        android:extractNativeLibs="false"
+16        android:fullBackupContent="false"
+16-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:6:9-42
+17        android:icon="@drawable/ic_launcher"
+17-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:8:9-45
+18        android:label="@string/app_name"
+18-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:9:9-41
+19        android:supportsRtl="true"
+19-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:10:9-35
+20        android:theme="@style/Theme.HoloCubeTransmitter" >
+20-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:11:9-57
+21
+22        <!-- The optical display prefers landscape on phones; layouts also fit larger windows. -->
+23        <activity
+23-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:13:9-18:71
+24            android:name="com.developer27.holocube.transmitter.AboutActivity"
+24-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:14:13-42
+25            android:exported="false"
+25-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:15:13-37
+26            android:screenOrientation="sensorLandscape"
+26-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:17:13-56
+27            android:theme="@style/Theme.HoloCubeTransmitter.About" />
+27-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:16:13-67
+28        <activity
+28-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:19:9-28:20
+29            android:name="com.developer27.holocube.transmitter.MainActivity"
+29-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:20:13-41
+30            android:exported="true"
+30-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:21:13-36
+31            android:screenOrientation="sensorLandscape" >
+31-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:22:13-56
+32            <intent-filter>
+32-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:24:13-27:29
+33                <action android:name="android.intent.action.MAIN" />
+33-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:25:17-69
+33-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:25:25-66
+34
+35                <category android:name="android.intent.category.LAUNCHER" />
+35-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:26:17-77
+35-->/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:26:27-74
+36            </intent-filter>
+37        </activity>
+38    </application>
+39
+40</manifest>

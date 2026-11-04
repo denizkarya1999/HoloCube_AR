@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">HoloCube Transmitter</string>
-    <string name="holocube">HoloCube</string>
-    <string name="about_us">About Us</string>
-    <string name="back_to_image">Back to image</string>
-    <string name="image_description">HoloCube transmitter image. Activate to show or hide the About Us button.</string>
-    <string name="project_details"><b>Name:</b> HoloCube Research Project\n\n<b>Version:</b> 1.0\n\n<b>Release Date:</b> TBD\n\n<b>Developers:</b> Deniz K. Acikbas and Ahmad Jayeb\n\n<b>Advisor:</b> Xiao Zhang\n\n<b>Institution:</b> University of Michigan-Dearborn</string>
-</resources>

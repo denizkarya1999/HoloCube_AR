@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res"><file path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/values/strings.xml" qualifiers=""><string name="app_name">HoloCube Transmitter</string><string name="holocube">HoloCube</string><string name="about_us">About Us</string><string name="back_to_image">Back to image</string><string name="image_description">HoloCube transmitter image. Activate to show or hide the About Us button.</string><string name="project_details"><b>Name:</b> HoloCube Research Project\n\n<b>Version:</b> 1.0\n\n<b>Release Date:</b> TBD\n\n<b>Developers:</b> Deniz K. Acikbas and Ahmad Jayeb\n\n<b>Advisor:</b> Xiao Zhang\n\n<b>Institution:</b> University of Michigan-Dearborn</string></file><file path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/values/styles.xml" qualifiers=""><style name="Theme.HoloCubeTransmitter" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/michigan_maize</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+    </style><style name="Theme.HoloCubeTransmitter.About" parent="Theme.HoloCubeTransmitter">
+        <item name="android:windowBackground">@color/michigan_blue</item>
+    </style><style name="HoloCubeButton" parent="android:style/Widget.Material.Button.Borderless">
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:textColor">@color/michigan_maize</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+    </style></file><file path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/values/colors.xml" qualifiers=""><color name="michigan_blue">#00274C</color><color name="michigan_maize">#FFCB05</color><color name="black">#000000</color></file><file name="activity_about" path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/layout/activity_about.xml" qualifiers="" type="layout"/><file name="activity_main" path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/layout/activity_main.xml" qualifiers="" type="layout"/><file path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/values-v29/styles.xml" qualifiers="v29"><style name="Theme.HoloCubeTransmitter" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/michigan_maize</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+    </style></file><file name="ic_launcher" path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/drawable/ic_launcher.xml" qualifiers="" type="drawable"/><file name="button_background" path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/drawable/button_background.xml" qualifiers="" type="drawable"/><file name="ic_cube" path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/drawable/ic_cube.xml" qualifiers="" type="drawable"/><file name="transmitter_frame" path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/drawable-nodpi/transmitter_frame.png" qualifiers="nodpi-v4" type="drawable"/><file name="data_extraction_rules" path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/xml/data_extraction_rules.xml" qualifiers="" type="xml"/></source></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/build/generated/res/resValues/debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/build/generated/res/resValues/debug"/></dataSet><mergedItems/></merger>

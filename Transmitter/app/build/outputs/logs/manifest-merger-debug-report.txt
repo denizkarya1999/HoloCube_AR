@@ -1,0 +1,75 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:2:1-30:12
+INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:2:1-30:12
+INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:2:1-30:12
+INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:2:1-30:12
+	package
+		INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml
+	xmlns:tools
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:3:5-51
+	android:versionCode
+		INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:2:11-69
+application
+ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:4:5-29:19
+INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:4:5-29:19
+	android:extractNativeLibs
+		INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml
+	android:supportsRtl
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:10:9-35
+	android:label
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:9:9-41
+	android:fullBackupContent
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:6:9-42
+	android:icon
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:8:9-45
+	android:allowBackup
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:5:9-36
+	android:theme
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:11:9-57
+	android:dataExtractionRules
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:7:9-65
+activity#com.developer27.holocube.transmitter.AboutActivity
+ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:13:9-18:71
+	android:screenOrientation
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:17:13-56
+	android:exported
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:15:13-37
+	tools:ignore
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:18:13-68
+	android:theme
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:16:13-67
+	android:name
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:14:13-42
+activity#com.developer27.holocube.transmitter.MainActivity
+ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:19:9-28:20
+	android:screenOrientation
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:22:13-56
+	android:exported
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:21:13-36
+	tools:ignore
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:23:13-68
+	android:name
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:20:13-41
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:24:13-27:29
+action#android.intent.action.MAIN
+ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:25:17-69
+	android:name
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:25:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:26:17-77
+	android:name
+		ADDED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml:26:27-74
+uses-sdk
+INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml
+INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/AndroidManifest.xml

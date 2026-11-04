@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.13.2" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.developer27.holocube.transmitter.MainActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <entry
+            name="model"
+            string="color[michigan_blue(U),michigan_maize(U),black(U)],drawable[ic_launcher(U),button_background(U),ic_cube(U),transmitter_frame(U)],id[root(U),close_about(U),project_details(D),transmitter_image(U),about_button(U)],layout[activity_about(U),activity_main(U)],string[app_name(U),holocube(U),back_to_image(U),about_us(U),project_details(U),image_description(U)],style[Theme_HoloCubeTransmitter(U),Theme_HoloCubeTransmitter_About(U),HoloCubeButton(U)],xml[data_extraction_rules(U)];3^0^1,4^0^1,5^1,c^5^f^1^10^16^11^e^12,d^13^6^11^16,14^1^2,15^14^0,16^4^1;;;"/>
+    </map>
+
+</incidents>

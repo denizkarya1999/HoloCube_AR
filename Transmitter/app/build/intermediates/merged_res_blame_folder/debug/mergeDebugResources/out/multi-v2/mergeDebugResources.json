@@ -1,0 +1,86 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.developer27.holocube.transmitter.app-debug-4:/values_values.arsc.flat",
+            "map": [
+                {
+                    "source": "/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/values/styles.xml",
+                    "from": {
+                        "startLines": "13,1,10",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "745,16,572",
+                        "endLines": "22,9,12",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "1299,567,740"
+                    },
+                    "to": {
+                        "startLines": "11,21,30",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "792,1351,1907",
+                        "endLines": "20,29,32",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "1346,1902,2075"
+                    }
+                },
+                {
+                    "source": "/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/values/strings.xml",
+                    "from": {
+                        "startLines": "3,1,4,2,5,6",
+                        "startColumns": "4,4,4,4,4,4",
+                        "startOffsets": "120,16,166,74,222,342",
+                        "endColumns": "45,57,55,45,119,273",
+                        "endOffsets": "161,69,217,115,337,611"
+                    },
+                    "to": {
+                        "startLines": "5,6,7,8,9,10",
+                        "startColumns": "4,4,4,4,4,4",
+                        "startOffsets": "192,238,296,352,398,518",
+                        "endColumns": "45,57,55,45,119,273",
+                        "endOffsets": "233,291,347,393,513,787"
+                    }
+                },
+                {
+                    "source": "/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/values/colors.xml",
+                    "from": {
+                        "startLines": "3,1,2",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "113,16,64",
+                        "endColumns": "39,47,48",
+                        "endOffsets": "148,59,108"
+                    },
+                    "to": {
+                        "startLines": "2,3,4",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,95,143",
+                        "endColumns": "39,47,48",
+                        "endOffsets": "90,138,187"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "com.developer27.holocube.transmitter.app-debug-4:/values-v29_values-v29.arsc.flat",
+            "map": [
+                {
+                    "source": "/home/denizkaryaacikbas/Projects/HoloCube/Transmitter/app/src/main/res/values-v29/styles.xml",
+                    "from": {
+                        "startLines": "1",
+                        "startColumns": "4",
+                        "startOffsets": "16",
+                        "endLines": "12",
+                        "endColumns": "12",
+                        "endOffsets": "764"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "13",
+                        "endColumns": "12",
+                        "endOffsets": "803"
+                    }
+                }
+            ]
+        }
+    ]
+}

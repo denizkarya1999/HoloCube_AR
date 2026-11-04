@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.13.2" type="partial_results">
+    <map id="UnusedResources">
+        <entry
+            name="model"
+            string="id[transmitter_image(R),about_button(R),root(R),project_details(R),close_about(R)];;;;"/>
+    </map>
+
+</incidents>

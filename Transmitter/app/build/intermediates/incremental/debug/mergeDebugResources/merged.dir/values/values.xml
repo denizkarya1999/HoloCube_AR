@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="michigan_blue">#00274C</color>
+    <color name="michigan_maize">#FFCB05</color>
+    <string name="about_us">About Us</string>
+    <string name="app_name">HoloCube Transmitter</string>
+    <string name="back_to_image">Back to image</string>
+    <string name="holocube">HoloCube</string>
+    <string name="image_description">HoloCube transmitter image. Activate to show or hide the About Us button.</string>
+    <string name="project_details"><b>Name:</b> HoloCube Research Project\n\n<b>Version:</b> 1.0\n\n<b>Release Date:</b> TBD\n\n<b>Developers:</b> Deniz K. Acikbas and Ahmad Jayeb\n\n<b>Advisor:</b> Xiao Zhang\n\n<b>Institution:</b> University of Michigan-Dearborn</string>
+    <style name="HoloCubeButton" parent="android:style/Widget.Material.Button.Borderless">
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:textColor">@color/michigan_maize</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+    </style>
+    <style name="Theme.HoloCubeTransmitter" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/michigan_maize</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+    </style>
+    <style name="Theme.HoloCubeTransmitter.About" parent="Theme.HoloCubeTransmitter">
+        <item name="android:windowBackground">@color/michigan_blue</item>
+    </style>
+</resources>

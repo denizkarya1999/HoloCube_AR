@@ -18,12 +18,15 @@ Version 0.7 keeps the replacement checkpoint supplied on October 23, 2026;
 its checksum and dataset context are recorded in the model's `provenance.json`.
 A computer is only needed to build or install the app.
 
-## Android phone transmitter
+## Android phone app
 
-[**HoloCube Transmitter**](Transmitter/) is a separate, lightweight Android app
-that displays the supplied optical pattern full screen and keeps the phone awake.
-Tap the image to reveal **About Us**, with the same research team details as the
-VR app. See its [build and installation guide](Transmitter/README.md).
+[**HoloCube Android**](https://github.com/denizkarya1999/HoloCube_Android) is the
+phone edition of this app: the same trained transmitter checkpoint, Python runtime,
+and startup reference running on an Android phone, built in the LiFind app structure.
+It also contains the HoloCube Transmitter: its **Transmitter** button shows the
+optical pattern full screen at maximum brightness, so one phone can act as the
+transmitter while the headset or another phone recognizes it. The former standalone
+Transmitter project in this repository has been merged into that app.
 
 ## Research inspiration
 
