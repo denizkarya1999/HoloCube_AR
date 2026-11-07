@@ -1,32 +1,71 @@
 # HoloCube validation
 
-## In-Device Local File Inference — November 7, 2026 (code complete, not yet built)
+## In-Device Local File Inference — November 7, 2026
 
-- HoloCube **0.9 (code 9)** in source only. Adds `LocalFileInference` (Settings → right
-  trigger): a runtime-built panel that runs the Transmitter Detection Model on images
-  stored on the headset (`Pictures/HoloCube Test Dataset`, or the app's own files folder)
-  and shows the image, the box in image pixels, its confidence, and the inference time;
-  joystick left/right picks the image, A runs it again, Y returns to Settings. The
-  Settings controls line and the controller guide mention it, the manifest gains
-  `READ_MEDIA_IMAGES` (and `READ_EXTERNAL_STORAGE` for Android 12), the scene setup and
-  validation gained matching code, and `Tools/push-test-images.sh` copies test images to
-  a device. The same checkpoint as 0.8.
-- **Checked on the workstation:** the runtime scripts (`MainApp`, `LocalFileInference`,
-  `SettingsPanel`, `DetectionOverlay`, `CameraVideoCapture`, the Transmitter Inference and
-  Model scripts) compile with Unity's bundled Roslyn against the editor's
-  `UnityEngine.*Module.dll` assemblies and `netstandard 2.1`, with hand-written stubs for
-  the Meta SDK and UGUI types, `UNITY_ANDROID` defined. This catches type and syntax
-  errors only.
-- **Not done:** `bash Tools/run-unity.sh Validate` and `Build` could not run (Unity still
-  reports no editor license on this workstation), so the new validation checks, the scene,
-  the APK, and the Android packaging guard were not exercised, and no Quest was connected.
-  Nothing from this release has run on a headset: the permission dialog, folder reading,
-  image decoding, the panel layout at 1.25 m, and the box placement are unverified.
+- HoloCube **0.9 (code 9)**, package `com.developer27.holocube`, installed on the Quest 3S
+  over 0.7 (the 0.8 pyramid-model build had never reached the headset). Adds
+  `LocalFileInference` (Settings → right trigger): a runtime-built panel that runs the
+  Transmitter Detection Model on images stored on the headset (`Pictures/HoloCube Test
+  Dataset`, or the app's own files folder) and shows the image, the box in image pixels,
+  its confidence, and the inference time; joystick left/right picks the image, A runs it
+  again, Y returns to Settings. The Settings controls line and the controller guide
+  mention it, the manifest gains `READ_MEDIA_IMAGES` (and `READ_EXTERNAL_STORAGE` for
+  Android 12), the scene setup and validation gained matching code, and
+  `Tools/push-test-images.sh` copies test images to a device. Same checkpoint as 0.8
+  (SHA-256 `1b65b56b…`).
+- Before the Unity runs, the runtime scripts were compiled with Unity's bundled Roslyn
+  against the editor's `UnityEngine.*Module.dll` assemblies with stubs for the Meta SDK
+  and UGUI types; this only caught type and syntax errors.
 
-To finish this release: sign in to Unity Hub, run `Validate`, `ValidateGPU`, and `Build`,
-copy test images with `bash Tools/push-test-images.sh <folder> <quest serial>`, install
-the APK, open Settings and press the right trigger, allow photo access, and compare the
-reported box with the dataset label of the same frame.
+### Passed on the development computer
+
+- Unity batch mode needed a refreshed Hub sign-in (the licensing client reported "Access
+  token is unavailable" until Unity Hub was started once); after that:
+- `bash Tools/run-unity.sh Validate`: scene wiring, decoder checks, the new local-file
+  picture-fit and box-mapping checks, and the PyTorch 1.8.1 parity on the three fixtures
+  (`HOLOCUBE_VALIDATION_PASSED`, `Builds/Validate-local-file.log`).
+- `bash Tools/run-unity.sh ValidateGPU` on the RTX 3050 Ti: padding, orientation, and
+  sRGB checks passed; its real RGBA output through the checkpoint reproduced the reference
+  box (`HOLOCUBE_PT_GPU_INPUT_PASSED`, `Builds/Validate-local-file-gpu-model.log`).
+- `bash Tools/run-unity.sh Build`: scene regenerated, validation repeated, packaging guard
+  passed (`HOLOCUBE_TRANSMITTER_PACKAGE_PASSED`). The regeneration-only object-ID churn in
+  the saved scene was discarded afterwards, as in earlier releases.
+
+APK: `Builds/HoloCube.apk`, 111,090,040 bytes, SHA-256
+`cd448d1e24f035a850f41c69f8f21af7c01cb2dce1abce558380a2eb879e2dd0`; `aapt` reports 0.9 /
+code 9 with `READ_MEDIA_IMAGES` and `READ_EXTERNAL_STORAGE`; the Python archive holds one
+`.pt` with the approved hash and the `frame_01153` startup reference.
+
+### Passed on the connected Quest 3S
+
+- `adb install -r` over 0.7 succeeded (package information confirms 0.9 / code 9; camera
+  and microphone permissions preserved). Cold launch: `HOLOCUBE_PT_DEVICE_PARITY_PASSED`,
+  `HOLOCUBE_PT_READY`, first live camera frame in **137 ms** (190 ms on a later launch);
+  no crash. This is the pyramid-only model's first run on a headset.
+- `bash Tools/push-test-images.sh` placed 18 frames of the pyramid dataset's testing
+  split (five per clip) plus the three parity-fixture frames in `Pictures/HoloCube Test
+  Dataset`, registered with the media store.
+- Worn by the user: Settings → right trigger opened the panel, Horizon OS showed the
+  photo-access prompt and the user allowed it (`READ_MEDIA_IMAGES` now `granted=true`,
+  user-set), the page found the images (`HOLOCUBE_LOCAL_FILES: 18 images found`), ran the
+  model, and the joystick/A controls worked. Headset screenshots show the panel with
+  `bright_static_frame_01360.jpg (1/18) · 1280 × 720` and, after stepping to image 3,
+  `bright_static_frame_01432.jpg (3/18)` with one maize box labelled **Transmitter 81 %**
+  around the pyramid (`Docs/Screenshots/local-file-inference-quest.png`); the file path
+  logged `HOLOCUBE_TRANSMITTER_SINGLE_BOX`. Device log: `Builds/Quest-local-file.log`.
+- Note for later log reading: the Quest's logcat ring buffer is 256 KB and loses the app's
+  lines within a minute or two; `adb logcat -G 16M` plus a continuous capture was needed.
+  The app process is reclaimed by the system (`has died: cch`) whenever it sits in the
+  background, so it must be relaunched before testing.
+
+### Remaining checks
+
+- The reported boxes were not compared numerically with the dataset labels of the same
+  frames; the 81 % box on `frame_01432` visibly covers the pyramid and part of the cap.
+- The app's own `Android/data/.../files/HoloCube Test Dataset` fallback folder, the
+  no-images message, and the permission-denied path were not exercised.
+- Live camera detection of the physical transmitter with the pyramid-only model, and
+  longer headset sessions.
 
 ---
 

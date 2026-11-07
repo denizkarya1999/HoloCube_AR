@@ -224,6 +224,12 @@ screenshots; each image contains the left-eye and right-eye views.
 
 ![HoloCube Controller Guide on Quest](Docs/Screenshots/guide-quest.png)
 
+**In-Device Local File Inference (0.9, November 7, 2026):** Settings → right trigger,
+showing test frame 3 of 18 from `Pictures/HoloCube Test Dataset` with one box,
+**Transmitter 81 %**, on the pyramid.
+
+![HoloCube local file inference on Quest](Docs/Screenshots/local-file-inference-quest.png)
+
 ## Labels
 
 ### Detection labels
