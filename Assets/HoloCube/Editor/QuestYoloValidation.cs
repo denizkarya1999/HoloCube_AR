@@ -97,6 +97,17 @@ namespace HoloCube.Editor
             try { DetectionFilter.ReadYOLO26(wrongShape, landscape, 1, 0.35f, 24); }
             catch (InvalidOperationException) { rejected = true; }
             Require(rejected, "Reject non-end-to-end model output");
+
+            // In-Device Local File Inference: a 1280 × 720 image fits the 1040 × 560 picture area by
+            // height, and a YOLO box maps to the picture's top-left-anchored panel units.
+            var fitted = LocalFileInference.FitSize(new Vector2Int(1280, 720), new Vector2(1040, 560));
+            Require(Mathf.Approximately(fitted.y, 560f) && Mathf.Abs(fitted.x - 995.556f) < 0.01f, "Local file picture fit");
+            var panelBox = LocalFileInference.ToPanel(new Vector4(640, 360, 704, 396), new Vector2Int(1280, 720), fitted);
+            Require(Mathf.Abs(panelBox.x - 497.778f) < 0.01f && Mathf.Abs(panelBox.y + 280f) < 0.01f &&
+                Mathf.Abs(panelBox.width - 49.778f) < 0.01f && Mathf.Abs(panelBox.height - 28f) < 0.01f,
+                "Local file box mapping");
+            Require(LocalFileInference.FitSize(new Vector2Int(0, 720), new Vector2(1040, 560)) == Vector2.zero,
+                "Local file empty image");
         }
 
         private static void CheckRealModel()

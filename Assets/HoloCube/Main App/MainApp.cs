@@ -14,12 +14,14 @@ namespace HoloCube.QuestYOLO
         {
             Home,
             About,
-            Settings
+            Settings,
+            LocalFile
         }
 
         private const string ControllerMenu =
             "Press A: Transmitter Recognition · Hold B: Record Training Video\n" +
-            "Press X: About HoloCube · Press Y: Settings";
+            "Press X: About HoloCube · Press Y: Settings\n" +
+            "In Settings, right trigger: In-Device Local File Inference";
 
         [Header("Scene connections")]
         public PassthroughCameraAccess CameraAccess;
@@ -45,6 +47,7 @@ namespace HoloCube.QuestYOLO
         [Min(0.1f)] public float MaxResultAge = 0.75f;
 
         private TransmitterInference inference;
+        private LocalFileInference localFiles;
         private CameraVideoCapture videoCapture;
         private IEnumerator pendingDetection;
         private DateTime lastCameraTimestamp;
@@ -83,6 +86,9 @@ namespace HoloCube.QuestYOLO
                     throw new InvalidOperationException("Assign the camera, model, and overlay in the scene.");
 
                 inference = new TransmitterInference(Model);
+                if (StatusLabel != null && StatusLabel.transform.parent != null)
+                    localFiles = new LocalFileInference(StatusLabel.transform.parent.parent,
+                        () => inference, () => Confidence);
                 RequestPermissions();
                 SetStatus("Waiting for camera permission…\nAllow camera access to begin");
             }
@@ -123,6 +129,16 @@ namespace HoloCube.QuestYOLO
                     return;
                 }
 
+                if (menuPage == MenuPage.LocalFile && localFiles != null)
+                {
+                    // The file page owns the PyTorch worker while it is open; the camera waits.
+                    CancelDetection();
+                    Overlay.Clear();
+                    localFiles.Advance();
+                    return;
+                }
+                localFiles?.Cancel();
+
                 if (userPaused)
                 {
                     CancelDetection();
@@ -151,10 +167,27 @@ namespace HoloCube.QuestYOLO
 
             if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
             {
-                userPaused = !userPaused;
-                inferenceOffNoticeUntil = userPaused
-                    ? Time.unscaledTime + InferenceOffNoticeDuration
-                    : 0f;
+                if (menuPage == MenuPage.LocalFile && localFiles != null)
+                {
+                    localFiles.RunAgain();
+                }
+                else
+                {
+                    userPaused = !userPaused;
+                    inferenceOffNoticeUntil = userPaused
+                        ? Time.unscaledTime + InferenceOffNoticeDuration
+                        : 0f;
+                }
+            }
+
+            // Settings → right trigger opens In-Device Local File Inference.
+            if (menuPage == MenuPage.Settings && localFiles != null &&
+                OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
+            {
+                showControllerHelp = false;
+                menuPage = MenuPage.LocalFile;
+                CancelDetection();
+                localFiles.Open();
             }
 
             bButtonHeld = OVRInput.Get(OVRInput.Button.Two, OVRInput.Controller.RTouch);
@@ -181,7 +214,9 @@ namespace HoloCube.QuestYOLO
 
         private void UpdateSettingsWithJoystick()
         {
-            if (menuPage != MenuPage.Settings || Time.unscaledTime < nextSettingsJoystickActionTime)
+            bool localFilePage = menuPage == MenuPage.LocalFile && localFiles != null;
+            if ((menuPage != MenuPage.Settings && !localFilePage) ||
+                Time.unscaledTime < nextSettingsJoystickActionTime)
                 return;
 
             Vector2 stick = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.LTouch);
@@ -189,10 +224,18 @@ namespace HoloCube.QuestYOLO
                 return;
 
             int direction = stick.x > 0f ? 1 : -1;
-            Confidence = Mathf.Clamp(
-                Mathf.Round((Confidence + direction * 0.05f) * 100f) / 100f,
-                0.05f,
-                1f);
+            if (localFilePage)
+            {
+                // Left/right picks the previous or next test image and runs the model on it.
+                localFiles.Step(direction);
+            }
+            else
+            {
+                Confidence = Mathf.Clamp(
+                    Mathf.Round((Confidence + direction * 0.05f) * 100f) / 100f,
+                    0.05f,
+                    1f);
+            }
 
             nextSettingsJoystickActionTime = Time.unscaledTime + SettingsJoystickRepeatInterval;
         }
@@ -313,7 +356,11 @@ namespace HoloCube.QuestYOLO
             bool showInferenceOffStatus =
                 menuPage == MenuPage.Home && userPaused && !showControllerHelp && !failed &&
                 Time.unscaledTime < inferenceOffNoticeUntil;
-            bool showStatusPanel = menuPage != MenuPage.Home ||
+            // The file page has its own panel; the status card stays hidden behind it.
+            bool showLocalFiles = menuPage == MenuPage.LocalFile && localFiles != null &&
+                !showControllerHelp && !failed;
+            localFiles?.Show(showLocalFiles);
+            bool showStatusPanel = (menuPage != MenuPage.Home && !showLocalFiles) ||
                 showControllerHelp || showInferenceOffStatus || failed;
             if (statusPanel.activeSelf != showStatusPanel)
                 statusPanel.SetActive(showStatusPanel);
@@ -377,7 +424,7 @@ namespace HoloCube.QuestYOLO
                     return $"<size=32><b>Settings</b></size>\n" +
                         $"> <b>Confidence Thresholds</b>: {Confidence:0.00}\n" +
                         $"<b>Number of boxes (fixed)</b>: {TransmitterRecognitionModel.MaxDetections}\n" +
-                        "Joystick left/right: adjust confidence";
+                        SettingsPanel.HelpText;
                 default:
                     return string.IsNullOrEmpty(statusMessage) ? "HoloCube" : statusMessage;
             }
@@ -464,6 +511,7 @@ namespace HoloCube.QuestYOLO
         {
             StopRecording();
             videoCapture?.StopAndWait();
+            localFiles?.Cancel();
             CancelDetection();
             if (Overlay != null) Overlay.Clear();
         }
@@ -477,6 +525,8 @@ namespace HoloCube.QuestYOLO
             finally
             {
                 videoCapture = null;
+                localFiles?.Dispose();
+                localFiles = null;
                 inference?.Dispose();
                 inference = null;
             }

@@ -1,5 +1,35 @@
 # HoloCube validation
 
+## In-Device Local File Inference — November 7, 2026 (code complete, not yet built)
+
+- HoloCube **0.9 (code 9)** in source only. Adds `LocalFileInference` (Settings → right
+  trigger): a runtime-built panel that runs the Transmitter Detection Model on images
+  stored on the headset (`Pictures/HoloCube Test Dataset`, or the app's own files folder)
+  and shows the image, the box in image pixels, its confidence, and the inference time;
+  joystick left/right picks the image, A runs it again, Y returns to Settings. The
+  Settings controls line and the controller guide mention it, the manifest gains
+  `READ_MEDIA_IMAGES` (and `READ_EXTERNAL_STORAGE` for Android 12), the scene setup and
+  validation gained matching code, and `Tools/push-test-images.sh` copies test images to
+  a device. The same checkpoint as 0.8.
+- **Checked on the workstation:** the runtime scripts (`MainApp`, `LocalFileInference`,
+  `SettingsPanel`, `DetectionOverlay`, `CameraVideoCapture`, the Transmitter Inference and
+  Model scripts) compile with Unity's bundled Roslyn against the editor's
+  `UnityEngine.*Module.dll` assemblies and `netstandard 2.1`, with hand-written stubs for
+  the Meta SDK and UGUI types, `UNITY_ANDROID` defined. This catches type and syntax
+  errors only.
+- **Not done:** `bash Tools/run-unity.sh Validate` and `Build` could not run (Unity still
+  reports no editor license on this workstation), so the new validation checks, the scene,
+  the APK, and the Android packaging guard were not exercised, and no Quest was connected.
+  Nothing from this release has run on a headset: the permission dialog, folder reading,
+  image decoding, the panel layout at 1.25 m, and the box placement are unverified.
+
+To finish this release: sign in to Unity Hub, run `Validate`, `ValidateGPU`, and `Build`,
+copy test images with `bash Tools/push-test-images.sh <folder> <quest serial>`, install
+the APK, open Settings and press the right trigger, allow photo access, and compare the
+reported box with the dataset label of the same frame.
+
+---
+
 ## Pyramid-only Transmitter Recognition Model — November 6, 2026
 
 - HoloCube **0.8 (code 8)**, package `com.developer27.holocube`. Version and model

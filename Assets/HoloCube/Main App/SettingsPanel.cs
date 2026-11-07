@@ -4,13 +4,20 @@ using UnityEngine.UI;
 
 namespace HoloCube.QuestYOLO
 {
-    /// <summary>Displays adjustable confidence and the fixed single-box limit.</summary>
+    /// <summary>Displays adjustable confidence, the fixed single-box limit, and the page's controls.</summary>
     public sealed class SettingsPanel : MonoBehaviour
     {
+        /// <summary>The controls line under the rows; also opens In-Device Local File Inference.</summary>
+        public const string HelpText =
+            "Joystick left/right: adjust confidence\n" +
+            "Right trigger: In-Device Local File Inference (test the model on an image stored on the headset)";
+
         public Text ConfidenceValue;
         public Text BoxCountValue;
         public DialogPanel ConfidenceBox;
         public DialogPanel BoxCountBox;
+        [Tooltip("The controls line; found by name when a scene saved before it existed is used.")]
+        public Text HelpLabel;
 
         private static readonly Color Maize = new Color32(255, 203, 5, 255);
         private static readonly Color InactiveBorder = new Color(1f, 203f / 255f, 5f / 255f, 0.35f);
@@ -39,8 +46,27 @@ namespace HoloCube.QuestYOLO
                 }
                 SetSelected(ConfidenceBox, true);
                 SetSelected(BoxCountBox, false);
+                ApplyHelpText();
             }
             hasState = true;
+        }
+
+        /// <summary>Two-line controls text that fits under the divider; also updates an older saved scene.</summary>
+        private void ApplyHelpText()
+        {
+            var help = HelpLabel;
+            if (help == null)
+            {
+                var found = transform.Find("Joystick Help");
+                help = found != null ? found.GetComponent<Text>() : null;
+            }
+            if (help == null) return;
+            help.text = HelpText;
+            help.fontSize = 22;
+            help.horizontalOverflow = HorizontalWrapMode.Wrap;
+            help.verticalOverflow = VerticalWrapMode.Overflow;
+            help.rectTransform.sizeDelta = new Vector2(980, 72);
+            help.rectTransform.anchoredPosition = new Vector2(0, -154);
         }
 
         private static void SetSelected(DialogPanel box, bool selected)

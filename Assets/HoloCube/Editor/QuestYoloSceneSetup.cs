@@ -116,8 +116,8 @@ namespace HoloCube.Editor
         {
             PlayerSettings.companyName = "HoloCube";
             PlayerSettings.productName = "HoloCube";
-            PlayerSettings.bundleVersion = "0.7";
-            PlayerSettings.Android.bundleVersionCode = 7;
+            PlayerSettings.bundleVersion = "0.9";
+            PlayerSettings.Android.bundleVersionCode = 9;
             PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.developer27.holocube");
             PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -314,8 +314,8 @@ namespace HoloCube.Editor
             divider.rectTransform.sizeDelta = new Vector2(960, 1);
             divider.color = WithAlpha(DialogTextColor, 0.2f);
             divider.raycastTarget = false;
-            CreateSettingsText(root, "Joystick Help", "Joystick left/right: adjust confidence",
-                new Vector2(0, -145), new Vector2(960, 48), 26, TextAnchor.MiddleCenter);
+            settings.HelpLabel = CreateSettingsText(root, "Joystick Help", SettingsPanel.HelpText,
+                new Vector2(0, -154), new Vector2(980, 72), 22, TextAnchor.MiddleCenter);
 
             settings.Refresh(0.35f);
             rootObject.SetActive(false);

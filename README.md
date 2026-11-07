@@ -16,7 +16,9 @@ The active model has one class, `0: Transmitter`; the general 80-class COCO mode
 has been removed from the app. The trained detector uses the YOLO26n architecture.
 Version 0.8 carries the checkpoint supplied on November 6, 2026, trained on the
 1,323-frame pyramid dataset; its checksum, training metrics, and dataset context are
-recorded in the model's `provenance.json`.
+recorded in the model's `provenance.json`. Version 0.9 adds **In-Device Local File
+Inference** (Settings → right trigger): the same model run on test images stored on the
+headset, with the box, confidence, and inference time shown.
 A computer is only needed to build or install the app.
 
 ## Android phone app
@@ -82,7 +84,8 @@ HoloCube/
 │                                                       │   ├── QuestYOLO.unity                Launch scene
 │                                                       │   ├── Main App/
 │                                                       │   │   ├── MainApp.cs                 Camera → detection → display
-│                                                       │   │   └── DetectionOverlay.cs        Boxes and labels in the headset
+│                                                       │   │   ├── DetectionOverlay.cs        Boxes and labels in the headset
+│                                                       │   │   └── LocalFileInference.cs      Settings → run the model on an image stored on the headset
 │                                                       │   ├── Transmitter Inference/
 │                                                       │   │   ├── TransmitterInference.cs           Submit an image and read detections
 │                                                       │   │   ├── ImagePreprocessor.cs       Copy a small camera image from the GPU
@@ -111,6 +114,7 @@ HoloCube/
 │                                                       ├── run-unity.sh                       Build or validate from a terminal
 │                                                       ├── setup-python.sh                    Prepare isolated build tools
 │                                                       ├── validate-pt.py                     Test the unchanged .pt checkpoint
+│                                                       ├── push-test-images.sh                Copy test images to a headset or phone
 │                                                       └── Fixtures/Transmitter/                   PyTorch/Unity inference comparison
 ├── Docs/DEVELOPMENT.md                                 Setup, model format, limitations
 ├── .github/labels.json                                 GitHub issue-label definitions
@@ -159,6 +163,7 @@ Android app ID: `com.developer27.holocube`.
 3. Connect a Quest with developer mode enabled and sideload the APK.
 4. Open **HoloCube** in the headset and allow camera access.
 5. On startup, only the detection box and label with its confidence percentage are shown. Press the left controller’s **Menu (three lines)** button to show or hide the controls. **A** toggles transmitter recognition; “Inference Mode: Off” disappears after three seconds. Hold **B** to record training video; a red circle and **Recording** appear above your view while recording. Release **B** to stop: the indicator disappears, followed by saving progress and the saved filename for six seconds. MP4s are saved in `Movies/HoloCube` on the headset. Recording failures also appear briefly in the same area. Press **X** to open About HoloCube and **Y** to view Settings. In Settings, use the left joystick left/right to adjust the confidence threshold. The number of boxes is fixed at 1.
+6. **In-Device Local File Inference** tests the model without the camera: in Settings, press the **right trigger**. The headset runs the Transmitter Detection Model on the images in `Pictures/HoloCube Test Dataset` (copy them there with `bash Tools/push-test-images.sh <folder> [serial]`; the app's own `Android/data/com.developer27.holocube/files/HoloCube Test Dataset` folder works too) and shows the image, the box in image pixels, its confidence, and the inference time. Joystick left/right picks the previous or next image, **A** runs the current one again (for example after changing the threshold), and **Y** returns to Settings. The first use asks for photo access. Only the Transmitter Detection Model is listed today.
 
 Dialogs and recording messages use Michigan Maize text (`#FFCB05`) on Michigan Blue
 backgrounds (`#00274C`), following the [U-M color palette](https://brand.umich.edu/wp-content/uploads/2025/02/250027-U-M-Style-Guide-February2025.pdf).

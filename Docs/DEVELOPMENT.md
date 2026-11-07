@@ -75,6 +75,20 @@ selects detections. No second non-maximum suppression step is applied. The final
 single-box cap is fixed in the pipeline; the headset settings can adjust confidence
 but cannot increase the number of boxes.
 
+## Local file inference
+
+`LocalFileInference` (Settings → right trigger) builds its own world-space panel at
+runtime, so the saved scene needs no changes. It lists `.jpg`/`.jpeg`/`.png` files in
+`/sdcard/Pictures/HoloCube Test Dataset` (shared storage; `READ_MEDIA_IMAGES`, or
+`READ_EXTERNAL_STORAGE` on Android 12, is requested the first time the page opens) and in
+`Application.persistentDataPath/HoloCube Test Dataset` (no permission needed). The chosen
+file is decoded with `Texture2D.LoadImage` and sent through the same
+`TransmitterInference.Detect` path as a camera frame (GPU letterbox, Python worker,
+`DetectionFilter`), so the result is what the camera path would produce for that image.
+While the page is open `MainApp` cancels the camera detection and advances the file run
+instead; leaving the page cancels the file run so the worker is free again. The box is
+drawn over the picture with `LocalFileInference.ToPanel`, which the Unity validation checks.
+
 Pausing discards pending results. Native inference finishes safely in the background
 before another frame is submitted. Camera pose is captured with each image, and
 old results expire. Depth is estimated at two metres when scene depth is unavailable;
