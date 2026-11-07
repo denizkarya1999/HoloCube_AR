@@ -1,8 +1,8 @@
 {
   "model": "HoloCube Transmitter Recognition Model",
   "format": "Supplied trained PyTorch checkpoint, legacy serialization, unchanged",
-  "checkpoint_sha256": "3da988ae9e3aa5a66b175adb6275463d21f48828faac5ad77ebd0465570e7cf5",
-  "export": "Training notebook produced an app-compatible native .pt; no additional conversion for deployment",
+  "checkpoint_sha256": "1b65b56bb61c0102bb963e34126d1e58cb0c459f0f14dc5a232262ec62d0e260",
+  "export": "Colab training notebook produced an app-compatible native .pt (unfused, CPU float32, pickle protocol 2, legacy serialization); no additional conversion for deployment",
   "runtime": {
     "python": "3.8",
     "torch": "1.8.1",
@@ -33,21 +33,44 @@
   "license": "AGPL-3.0",
   "architecture": "YOLO26n, end-to-end, single class",
   "checkpoint_file": "holocube_transmitter.pt",
-  "source": "User-supplied Downloads/holocube_transmitter.pt on 2026-10-23",
+  "source": "User-supplied Desktop/holocube_transmitter.pt on 2026-11-06; identical to holocube_transmitter.pt in the Drive export bundle transmitter_pyramid_1323frames_20261106_20261107_043246_093158",
   "class_names": {
     "0": "Transmitter"
   },
-  "training_metrics": null,
+  "class_definition": "The black inverted pyramid (hologram prism) hanging inside the transmitter's cube frame. The frame, mounting bracket, and overhead rail are outside the box. Earlier checkpoints (through HoloCube 0.7) boxed the whole assembly instead.",
+  "training": {
+    "notebook": "HoloCube_Transmitter_Training_YOLO26.ipynb in Google Colab",
+    "run": "transmitter_pyramid_1323frames_20261106_20261107_043246_093158",
+    "ultralytics": "8.4.56",
+    "torch": "2.14.1+cu130",
+    "pretrained": "yolo26n.pt",
+    "imgsz": 320,
+    "batch": 16,
+    "optimizer": "AdamW",
+    "lr0": 0.001,
+    "seed": 42,
+    "epochs_requested": 100,
+    "epochs_completed": 59,
+    "patience": 25
+  },
+  "training_metrics": {
+    "note": "Ultralytics validation at 320 px on the dataset's own time-block splits (same room and rig); best-F1 precision/recall; not a new-scene benchmark",
+    "train": { "images": 928, "mAP50": 0.9896, "mAP50_95": 0.8256, "precision": 0.9540, "recall": 0.9842 },
+    "val": { "images": 264, "mAP50": 0.7927, "mAP50_95": 0.5886, "precision": 0.7688, "recall": 0.7500 },
+    "test": { "images": 131, "mAP50": 0.9474, "mAP50_95": 0.7115, "precision": 0.9924, "recall": 0.8473 }
+  },
   "validation": "Three validation-split transmitter frames (bright, angled, low light) compared against independent Ultralytics inference; not an accuracy benchmark",
-  "checkpoint_bytes": 10386814,
+  "checkpoint_bytes": 10384601,
   "intended_dataset": {
-    "archive": "HoloCube_Transmitter_YOLO26_300frames_20261023.zip",
-    "sha256": "2c0bbe30ff0ce3a5af869dbc1591d12a6f23aa8fad8d073fa3daf42a800cfcc6",
+    "archive": "HoloCube_Transmitter_Pyramid_YOLO26_1323frames.zip",
+    "sha256": "47716c6fe8c1b2fd3dd445ed572e02d5d3b061688cd5edf3b46cf72ff4bcb98c",
     "counts": {
-      "train": 210,
-      "val": 60,
-      "test": 30
+      "train": 928,
+      "val": 264,
+      "test": 131
     },
-    "note": "Prepared in this project; the supplied model-only checkpoint does not contain training-run metadata or metrics."
+    "source_video": "HoloCube_Unified_Landscape.mp4: three Quest recordings joined, 1280 x 720, 30 fps, every 3rd frame; two bright-room clips and one dark-room clip with the pyramid lit",
+    "labels": "Semi-automatic: one hand-drawn seed box, an object tracker, then two rounds of YOLO26n self-training; about 100 frames spot-checked visually; the archive's REVIEW.txt lists 92 low-confidence frames",
+    "note": "Prepared in this project on 2026-11-06 and used to train this checkpoint in the Colab notebook, so the metrics above come from its own splits."
   }
 }

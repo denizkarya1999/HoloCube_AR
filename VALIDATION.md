@@ -1,5 +1,52 @@
 # HoloCube validation
 
+## Pyramid-only Transmitter Recognition Model — November 6, 2026
+
+- HoloCube **0.8 (code 8)**, package `com.developer27.holocube`. Version and model
+  integration only: no APK was built and nothing was installed on a Quest in this
+  session.
+- Replaced the checkpoint with the file supplied on the Desktop on November 6
+  (10,384,601 bytes), embedded unchanged. The only class is still **0: Transmitter**,
+  but it now means the transmitter's **central pyramid** (the black inverted hologram
+  prism inside the cube frame). Checkpoints through 0.7 boxed the whole assembly, so
+  boxes from this release are much smaller than before.
+- Model SHA-256:
+  `1b65b56bb61c0102bb963e34126d1e58cb0c459f0f14dc5a232262ec62d0e260`.
+- Trained in the Colab notebook from `HoloCube_Transmitter_Pyramid_YOLO26_1323frames.zip`
+  (928 training / 264 validation / 131 testing frames, every 3rd frame of three
+  same-room recordings, semi-automatic labels): YOLO26n at 320 px, 59 of 100 epochs
+  before early stopping. Ultralytics scores on the dataset's own splits: validation
+  mAP50 0.79 / mAP50-95 0.59, testing mAP50 0.95 / mAP50-95 0.71 (full table in
+  `provenance.json`). These are same-room, same-rig numbers, not a new-scene benchmark,
+  and the validation split contains the steep side-angle frames where the labels are
+  least reliable.
+- New fixtures from that dataset's validation split (1280 × 720 frames): bright
+  `frame_01153`, angled `frame_03905`, and low-light `frame_02444`, with reference boxes
+  from independent Ultralytics 8.4.56 / PyTorch 2.12.0 inference on the unfused model.
+  Each has exactly one detection above 35%, on the pyramid.
+- Desktop PyTorch 1.8.1 (`Tools/validate-pt.py`, the embedded runtime's version)
+  matched all three references within 0.001 confidence and 1 original-image pixel.
+  Blank input, signed RGBA orientation, startup-reference mismatch, and
+  modified-checkpoint rejection checks passed. Log: `Builds/Validate-pyramid-python.log`.
+- `bash Tools/run-unity.sh Validate` did **not** run: Unity 6000.0.66f2 exited with
+  "No valid Unity Editor license found" before executing the method
+  (`Builds/Validate-pyramid-unity-license.log`). The scene, decoder, GPU-preprocessing,
+  and APK-guard checks were therefore not repeated. The only Unity-side changes are the
+  checkpoint hash constant, which equals the file's SHA-256, and the version bump.
+- The Android phone edition received the same checkpoint, hash, fixtures, and
+  provenance (HoloCube Android 1.1); its checks are recorded in that repository.
+
+Remaining checks for this release:
+
+- Sign in to Unity Hub, then run `Validate`, `ValidateGPU`, and `Build`.
+- Install on a Quest 3 / 3S: startup parity (`HOLOCUBE_PT_DEVICE_PARITY_PASSED`), live
+  camera detection of the physical transmitter, and whether the smaller pyramid box
+  reads well in the headset at typical distances.
+- Any scene other than the lab room, and the side-angle views where the dataset's own
+  validation score is lowest.
+
+---
+
 ## Single Transmitter box release — October 23, 2026
 
 - HoloCube **0.7 (code 7)**, package `com.developer27.holocube`, installed on Quest 3S.

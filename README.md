@@ -14,8 +14,9 @@ The camera, trained model, and detection code run on the Quest, offline. The APK
 embeds Python, PyTorch, and the supplied **`holocube_transmitter.pt`** checkpoint.
 The active model has one class, `0: Transmitter`; the general 80-class COCO model
 has been removed from the app. The trained detector uses the YOLO26n architecture.
-Version 0.7 keeps the replacement checkpoint supplied on October 23, 2026;
-its checksum and dataset context are recorded in the model's `provenance.json`.
+Version 0.8 carries the checkpoint supplied on November 6, 2026, trained on the
+1,323-frame pyramid dataset; its checksum, training metrics, and dataset context are
+recorded in the model's `provenance.json`.
 A computer is only needed to build or install the app.
 
 ## Android phone app
@@ -36,9 +37,11 @@ explores optical IoT communication using virtual 3D cubes, Pepper’s Ghost, and
 spatial/color encoding. [Read the paper](https://www.zhangxiao.me/data/ICNP24_HoloCube.pdf).
 
 This independent prototype provides the Quest camera → trained transmitter detector
-→ AR bounding-box pipeline. The recognition target is the transmitter assembly:
-black cube frame, central pyramid, and phone/base, as annotated in the supplied
-dataset. It does not decode optical data or identify individual transmitters.
+→ AR bounding-box pipeline. Since version 0.8 the recognition target is the
+transmitter's **central pyramid** (the black inverted hologram prism inside the cube
+frame), as labelled in the supplied dataset; the frame, bracket, and rail lie outside
+the box. Earlier releases boxed the whole assembly. It does not decode optical data
+or identify individual transmitters.
 The paper’s optical data transmission and control channel remain future work.
 This repository is not the authors’ official implementation or a reproduction
 of their reported results.
