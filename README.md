@@ -235,6 +235,13 @@ showing test frame 3 of 18 from `Pictures/HoloCube Test Dataset` with one box,
 
 ![HoloCube local file inference on Quest](Docs/Screenshots/local-file-inference-quest.png)
 
+**In-Device Local File Inference with the Orientation Detection Model (0.12, November 15,
+2026):** test frame 4 of 18: the transmitter box, the orientation triangle drawn on the
+pyramid inside it, the label **Transmitter 82 % · South 92 %**, and the result text with
+the triangle's corners. The orientation pass took about 725 ms on the Quest 3S.
+
+![HoloCube orientation triangle on Quest](Docs/Screenshots/local-file-orientation-quest.png)
+
 ## Labels
 
 ### Detection labels
