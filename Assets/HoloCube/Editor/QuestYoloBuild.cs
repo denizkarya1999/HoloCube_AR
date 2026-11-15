@@ -106,18 +106,24 @@ namespace HoloCube.Editor
             {
                 if (!entry.FullName.EndsWith(".pt", StringComparison.OrdinalIgnoreCase)) continue;
                 checkpoints++;
-                if (entry.FullName != TransmitterRecognitionModel.CheckpointFile)
-                    throw new BuildFailedException("Unexpected model in APK: " + entry.FullName);
+                string expected = entry.FullName == TransmitterRecognitionModel.CheckpointFile
+                    ? TransmitterRecognitionModel.CheckpointHash
+                    : entry.FullName == OrientationDetectionModel.CheckpointFile
+                        ? OrientationDetectionModel.CheckpointHash
+                        : throw new BuildFailedException("Unexpected model in APK: " + entry.FullName);
                 using var stream = entry.Open();
                 using var sha = SHA256.Create();
                 string hash = BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
-                if (hash != TransmitterRecognitionModel.CheckpointHash)
-                    throw new BuildFailedException("The APK transmitter checkpoint does not match the approved weights.");
+                if (hash != expected)
+                    throw new BuildFailedException("The APK checkpoint " + entry.FullName + " does not match the approved weights.");
             }
-            if (checkpoints != 1 || package.GetEntry("reference.f32") == null ||
-                package.GetEntry("reference.json") == null)
-                throw new BuildFailedException("The APK requires one transmitter checkpoint and its startup reference.");
+            if (checkpoints != 2 || package.GetEntry("reference.f32") == null ||
+                package.GetEntry("reference.json") == null ||
+                package.GetEntry("orientation_reference.u8") == null ||
+                package.GetEntry("orientation_reference.json") == null)
+                throw new BuildFailedException("The APK requires the transmitter and orientation checkpoints and their startup references.");
             Debug.Log("HOLOCUBE_TRANSMITTER_PACKAGE_PASSED: only the checksum-verified transmitter model is embedded.");
+            Debug.Log("HOLOCUBE_ORIENTATION_PACKAGE_PASSED: the checksum-verified orientation model is embedded beside it.");
         }
     }
 }

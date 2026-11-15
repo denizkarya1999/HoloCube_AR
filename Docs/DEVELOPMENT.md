@@ -16,7 +16,7 @@ directly. Training and export dependencies are not included in the app.
 | Embedded PyTorch | 1.8.1, CPU |
 | Embedded NumPy | 1.19.5 |
 | Chaquopy Android packaging | 16.1.0 |
-| Model | Trained single-class YOLO26n transmitter `.pt` checkpoint |
+| Models | Trained single-class YOLO26n transmitter `.pt` checkpoint; trained eight-class YOLO26n-seg orientation `.pt` checkpoint |
 | Android | ARM64, IL2CPP, Vulkan; minimum API 32, target API 35 |
 
 PyTorch 1.8.1 is available as a Python package for Android ARM64 through Chaquopy.
@@ -44,8 +44,9 @@ Dependency downloads happen on the build computer. The installed app works offli
 A small reference-image tensor is bundled for a one-time startup inference check;
 its known detections must match before the model accepts camera frames.
 Incremental builds remove the former `yolo26n.pt` from generated Python sources.
-The final APK/AAB guard checks that exactly one `.pt` is packaged and verifies its
-SHA-256 against the supplied transmitter weights, preventing stale generic models.
+The final APK/AAB guard checks that exactly two `.pt` files are packaged (transmitter and
+orientation), verifies each SHA-256 against the approved weights, and requires both
+startup references, preventing stale generic models.
 
 Set `UNITY_EDITOR_PATH` if Unity is installed elsewhere. `HOLOCUBE_PYTHON` can point
 to another Python 3.8 environment containing PyTorch 1.8.1 and NumPy 1.19.5; use it
@@ -75,6 +76,41 @@ selects detections. No second non-maximum suppression step is applied. The final
 single-box cap is fixed in the pipeline; the headset settings can adjust confidence
 but cannot increase the number of boxes.
 
+## Orientation Detection Model
+
+`Assets/HoloCube/Orientation Model/holocube_orientation.pt` is a YOLO26n-seg model with
+eight classes (North clockwise to Northwest) trained at 640 × 640 on triangle labels. The
+supplied file was the training notebook's `best.pt` (new zip format, half precision),
+which PyTorch 1.8.1 cannot read, so `Tools/make-orientation-deployment.py` (run with the
+training environment, Ultralytics 8.4.56) re-saved it once in the format the transmitter
+notebook already produces: model only, unfused, CPU float32, legacy serialization. The
+tool keeps an existing deployed file and only verifies that its weights equal the supplied
+ones, because each legacy save has different bytes. Both hashes are in the folder's
+`provenance.json`.
+
+- `checkpoint_runtime.py` adds inference-only `Segment26`, `Proto26`, and
+  `SegmentationModel`, a loader that accepts only this checkpoint, and `orientation_rows`,
+  which reduces the mask (as Ultralytics' `process_mask` defines it) to the triangle the
+  labels were drawn as: the pixel farthest toward the upper left, the pixel farthest
+  toward the upper right, and the centre of the lowest two rows.
+- `holocube_runtime.initialize_orientation` runs after the transmitter's startup check
+  with the bundled bright reference frame (`Tools/Fixtures/Orientation/bright.*`). A
+  failure is logged as `HOLOCUBE_ORIENTATION_UNAVAILABLE`, shown on the Settings page, and
+  leaves the transmitter usable.
+- `TransmitterInference.Detect` captures the frame twice at the start (320 and 640
+  letterbox), reports the transmitter result first, then submits the 640 image
+  (`PyTorchWorker.submitOrientation`) and reports through its second callback.
+  `OrientationFilter.Read` reads `[5,12]` rows
+  `[x1,y1,x2,y2,confidence,class_id,ax,ay,bx,by,cx,cy]` and keeps the strongest valid one.
+- The orientation pass is several times slower than the transmitter pass, so `MainApp`
+  keeps the frame's world-placed box alive while it runs (`DetectionOverlay.KeepAlive`),
+  redraws it with the direction when it arrives, and shows a direction for at most
+  `MaxOrientationAge` seconds. The transmitter box therefore still appears as fast as
+  before but is refreshed less often. `MainApp.OrientationDetection` switches the second
+  model off in the scene; there is no headset control for it.
+- The orientation pass does not wait for a transmitter box; the two models were trained
+  on different recordings and one can find the pyramid when the other does not.
+
 ## Local file inference
 
 `LocalFileInference` (Settings → right trigger) builds its own world-space panel at
@@ -85,6 +121,8 @@ runtime, so the saved scene needs no changes. It lists `.jpg`/`.jpeg`/`.png` fil
 file is decoded with `Texture2D.LoadImage` and sent through the same
 `TransmitterInference.Detect` path as a camera frame (GPU letterbox, Python worker,
 `DetectionFilter`), so the result is what the camera path would produce for that image.
+The orientation model then runs on the same image; its direction is added to the status
+line and its confidence and triangle corners (image pixels) to the detail line.
 While the page is open `MainApp` cancels the camera detection and advances the file run
 instead; leaving the page cancels the file run so the worker is free again. The box is
 drawn over the picture with `LocalFileInference.ToPanel`, which the Unity validation checks.
@@ -110,8 +148,9 @@ provide a general-purpose arbitrary-checkpoint loader.
 
 ## Validation
 
-- `bash Tools/run-unity.sh Validate`: scene wiring, coordinates, decoder, and
-  actual direct-checkpoint inference against three transmitter reference fixtures.
+- `bash Tools/run-unity.sh Validate`: scene wiring, coordinates, both decoders, and
+  actual direct-checkpoint inference against three transmitter and three orientation
+  reference fixtures.
 - `bash Tools/run-unity.sh ValidateGPU`: real GPU preprocessing checks for
   padding, orientation, and sRGB. Saves `Builds/pt-preprocessed.rgba`.
 - `.build-tools/pt/bin/python Tools/validate-pt.py --rgba Builds/pt-preprocessed.rgba`:

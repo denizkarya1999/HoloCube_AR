@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check transmitter inference against independent Ultralytics reference boxes."""
+"""Check transmitter and orientation inference against independent Ultralytics references."""
 from pathlib import Path
 import argparse
 import hashlib
@@ -98,3 +98,66 @@ if args.rgba:
 
 assert hashlib.sha256(checkpoint.read_bytes()).hexdigest() == CHECKPOINT_SHA256
 print('HOLOCUBE_PT_PARITY_PASSED: three transmitter frames match within 0.001 confidence and 1 original-image pixel; PyTorch ' + torch.__version__)
+
+# ---------------- Orientation Detection Model ----------------
+from checkpoint_runtime import (load_orientation_model, orientation_rows, check_orientation_rows,
+                                ORIENTATION_CHECKPOINT_SHA256, ORIENTATION_SIZE, ORIENTATION_ROWS,
+                                ORIENTATION_COLUMNS, ORIENTATION_NAMES)
+
+orientation_checkpoint = root / 'Assets/HoloCube/Orientation Model/holocube_orientation.pt'
+orientation_fixture = root / 'Tools/Fixtures/Orientation'
+orientation = load_orientation_model(str(orientation_checkpoint))
+
+for name in ('bright', 'dimmed', 'dark'):
+    reference = json.loads((orientation_fixture / (name + '.json')).read_text())
+    assert reference['checkpoint_sha256'] == ORIENTATION_CHECKPOINT_SHA256
+    pixels = np.fromfile(orientation_fixture / (name + '.u8'), dtype=np.uint8).reshape(ORIENTATION_SIZE, ORIENTATION_SIZE, 3)
+    tensor = torch.from_numpy(np.ascontiguousarray(pixels.transpose(2, 0, 1), dtype=np.float32)[None] / 255.0)
+    rows = orientation_rows(orientation, tensor)
+    check_orientation_rows(rows, reference)
+    assert ORIENTATION_NAMES[int(rows[0, 5])] == reference['source_image'].split('_')[0]
+    print('Reference orientation matches:', reference['source_image'], '->', ORIENTATION_NAMES[int(rows[0, 5])])
+
+# Blank input must not generate a confident orientation.
+assert (orientation_rows(orientation, torch.zeros(1, 3, ORIENTATION_SIZE, ORIENTATION_SIZE))[:, 4] < .35).all()
+
+# Each loader accepts only its own checkpoint.
+for loader, other in ((load_model, orientation_checkpoint), (load_orientation_model, checkpoint)):
+    try:
+        loader(str(other))
+        raise AssertionError('A loader accepted the other model')
+    except ValueError as error:
+        assert 'Expected the bundled' in str(error)
+
+# The packaged startup check and the exact Android RGBA entry point (bottom row first).
+with tempfile.TemporaryDirectory() as temporary:
+    package = Path(temporary)
+    shutil.copyfile(orientation_checkpoint, package / orientation_checkpoint.name)
+    shutil.copyfile(orientation_fixture / 'bright.u8', package / 'orientation_reference.u8')
+    reference = json.loads((orientation_fixture / 'bright.json').read_text())
+    (package / 'orientation_reference.json').write_text(json.dumps(dict(reference, checkpoint_sha256='wrong-model')))
+    runtime.__file__ = str(package / 'holocube_runtime.py')
+    try:
+        runtime.initialize_orientation()
+        raise AssertionError('Mismatched orientation reference accepted')
+    except RuntimeError as error:
+        assert 'another model' in str(error)
+    assert runtime._orientation is None
+    (package / 'orientation_reference.json').write_text(json.dumps(reference))
+    print(runtime.initialize_orientation())
+    rgb = np.fromfile(package / 'orientation_reference.u8', dtype=np.uint8).reshape(ORIENTATION_SIZE, ORIENTATION_SIZE, 3)
+    pixels = np.zeros((ORIENTATION_SIZE, ORIENTATION_SIZE, 4), dtype=np.uint8)
+    pixels[:, :, :3] = rgb[::-1]
+    flat = runtime.detect_orientation_rgba(pixels.view(np.int8).reshape(-1))
+    check_orientation_rows(np.array(flat, dtype=np.float32).reshape(ORIENTATION_ROWS, ORIENTATION_COLUMNS), reference)
+    # Reject changed weights before unpickling.
+    (package / orientation_checkpoint.name).write_bytes(b'not the approved orientation checkpoint')
+    try:
+        load_orientation_model(str(package / orientation_checkpoint.name))
+        raise AssertionError('Changed orientation weights accepted')
+    except ValueError as error:
+        assert 'bundled Orientation' in str(error)
+
+assert hashlib.sha256(orientation_checkpoint.read_bytes()).hexdigest() == ORIENTATION_CHECKPOINT_SHA256
+print('HOLOCUBE_ORIENTATION_PARITY_PASSED: three orientation frames match within 0.001 confidence, '
+      '1 original-image pixel on the box, and 2 model pixels on the triangle; PyTorch ' + torch.__version__)

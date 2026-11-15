@@ -10,6 +10,7 @@ namespace HoloCube.Editor
     public sealed class PyTorchAndroidBuild : IPostGenerateGradleAndroidProject
     {
         public int callbackOrder => 1000;
+        public const string OrientationModelFolder = "Assets/HoloCube/Orientation Model/";
         public static string PythonPath => Environment.GetEnvironmentVariable("HOLOCUBE_PYTHON") ??
             Path.GetFullPath(".build-tools/pt/bin/python");
 
@@ -48,6 +49,12 @@ namespace HoloCube.Editor
 
             File.Copy("Tools/Fixtures/Transmitter/input.f32", Path.Combine(pythonDir, "reference.f32"), true);
             File.Copy("Tools/Fixtures/Transmitter/expected.json", Path.Combine(pythonDir, "reference.json"), true);
+
+            // The Orientation Detection Model and its bright startup reference frame.
+            File.Copy(OrientationModelFolder + OrientationDetectionModel.CheckpointFile,
+                Path.Combine(pythonDir, OrientationDetectionModel.CheckpointFile), true);
+            File.Copy("Tools/Fixtures/Orientation/bright.u8", Path.Combine(pythonDir, "orientation_reference.u8"), true);
+            File.Copy("Tools/Fixtures/Orientation/bright.json", Path.Combine(pythonDir, "orientation_reference.json"), true);
 
             string javaDir = Path.Combine(libraryPath, "src/main/java/com/holocube/pytorch");
             Directory.CreateDirectory(javaDir);

@@ -17,6 +17,9 @@ public final class PyTorchWorker {
     private boolean discarded;
     private boolean closed;
     private boolean reportedFrame;
+    private boolean reportedOrientationFrame;
+    private volatile boolean orientationReady;
+    private volatile String orientationError;
 
     public PyTorchWorker(Context context, int threads) {
         Context app = context.getApplicationContext();
@@ -27,6 +30,15 @@ public final class PyTorchWorker {
             PyObject runtime = Python.getInstance().getModule("holocube_runtime");
             Log.i("HoloCube", runtime.callAttr("initialize", threads).toString());
             Log.i("HoloCube", "HOLOCUBE_PT_READY: Transmitter Recognition Model loaded on device; class 0: Transmitter");
+            try {
+                Log.i("HoloCube", runtime.callAttr("initialize_orientation").toString());
+                orientationReady = true;
+                Log.i("HoloCube", "HOLOCUBE_ORIENTATION_READY: Orientation Detection Model loaded on device; classes North to Northwest");
+            } catch (Exception error) {
+                // The transmitter passed its own check and stays usable without this model.
+                orientationError = String.valueOf(error.getMessage());
+                Log.e("HoloCube", "HOLOCUBE_ORIENTATION_UNAVAILABLE: " + orientationError, error);
+            }
             return runtime;
         });
     }
@@ -58,6 +70,29 @@ public final class PyTorchWorker {
                 Log.i("HoloCube", "HOLOCUBE_PT_CAMERA_FRAME: " + rows.length / 6 +
                     " detection rows in " + (System.nanoTime() - start) / 1000000 + " ms");
                 reportedFrame = true;
+            }
+            return rows;
+        });
+    }
+
+    /** True once the orientation checkpoint is loaded and its reference check passed. */
+    public boolean isOrientationReady() { return orientationReady; }
+
+    /** Why the orientation model is unavailable, or null while loading or when it is ready. */
+    public String orientationError() { return orientationError; }
+
+    /** One 640 x 640 RGBA image for the orientation model; the result is read with take(). */
+    public synchronized void submitOrientation(byte[] rgba) {
+        if (!orientationReady) throw new IllegalStateException("The orientation model is not loaded");
+        if (!isIdle()) throw new IllegalStateException("PyTorch is still processing a frame");
+        discarded = false;
+        pending = executor.submit(() -> {
+            long start = System.nanoTime();
+            float[] rows = get(startup).callAttr("detect_orientation_rgba", (Object) rgba).toJava(float[].class);
+            if (!reportedOrientationFrame) {
+                Log.i("HoloCube", "HOLOCUBE_ORIENTATION_CAMERA_FRAME: " + rows.length / 12 +
+                    " orientation rows in " + (System.nanoTime() - start) / 1000000 + " ms");
+                reportedOrientationFrame = true;
             }
             return rows;
         });

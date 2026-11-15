@@ -1,0 +1,114 @@
+{
+  "model": "HoloCube Orientation Detection Model",
+  "format": "Supplied trained Ultralytics checkpoint re-saved for the embedded runtime: model only, unfused, CPU float32, pickle protocol 2, legacy serialization",
+  "checkpoint_file": "holocube_orientation.pt",
+  "checkpoint_sha256": "71326fcb52f994cf7373120ee42abe5693dc0051a78fc735e2f45e2c540b4579",
+  "checkpoint_bytes": 12678860,
+  "supplied_checkpoint_sha256": "d92db885573120c3c2b862a6c75e7fddce88227d2cf77e5243434cd11feadbdb",
+  "supplied_checkpoint_bytes": 6518557,
+  "source": "User-supplied Downloads/holocube_orientation.pt on 2026-11-15: the training notebook's copy of best.pt (new zip format, half precision, with training records)",
+  "conversion": "Tools/make-orientation-deployment.py in the Quest repository (Ultralytics 8.4.56). Weights and module structure are unchanged apart from the float16 to float32 cast; the tool verifies that the deployed weights equal the supplied ones. Each legacy save has different bytes, so this committed file's hash is the one the apps check.",
+  "runtime": {
+    "python": "3.8",
+    "torch": "1.8.1",
+    "numpy": "1.19.5",
+    "chaquopy": "16.1.0",
+    "device": "CPU"
+  },
+  "module_methods": "Inference-only adaptation of Ultralytics 8.4.56 (Segment26 head, Proto26 prototypes) in checkpoint_runtime.py",
+  "architecture": "YOLO26n-seg, end-to-end, eight classes, 32 mask prototypes",
+  "input": [
+    1,
+    3,
+    640,
+    640
+  ],
+  "model_output": {
+    "rows": [
+      1,
+      300,
+      38
+    ],
+    "prototypes": [
+      1,
+      32,
+      160,
+      160
+    ]
+  },
+  "app_output": [
+    5,
+    12
+  ],
+  "app_output_columns": [
+    "x1",
+    "y1",
+    "x2",
+    "y2",
+    "confidence",
+    "class_id",
+    "ax",
+    "ay",
+    "bx",
+    "by",
+    "cx",
+    "cy"
+  ],
+  "app_output_note": "The five strongest rows. The triangle is taken from the mask as Ultralytics' process_mask defines it: top-left corner A, top-right corner B, bottom tip C, in model-input pixels.",
+  "license": "AGPL-3.0",
+  "class_names": {
+    "0": "North",
+    "1": "Northeast",
+    "2": "East",
+    "3": "Southeast",
+    "4": "South",
+    "5": "Southwest",
+    "6": "West",
+    "7": "Northwest"
+  },
+  "class_definition": "The compass direction the hologram pyramid is seen from. The mask is a triangle over the pyramid face showing that direction's cube; from the four diagonal directions, where two faces are visible, the labels marked the middle of the pyramid.",
+  "training": {
+    "notebook": "HoloCube_Orientation_Training_YOLO26.ipynb in Google Colab",
+    "run": "orientation_triangle_16800frames_20261115_162957_513353",
+    "ultralytics": "8.4.56",
+    "pretrained": "yolo26n-seg.pt",
+    "imgsz": 640,
+    "batch": 16,
+    "optimizer": "AdamW",
+    "lr0": 0.001,
+    "seed": 42,
+    "horizontal_flip": 0.0,
+    "epochs_requested": 30,
+    "epochs_recorded": 19,
+    "best_epoch": 11,
+    "patience": 8
+  },
+  "training_metrics": {
+    "note": "From the checkpoint's own record: Ultralytics validation split at 640 px at the best epoch (same room and rig, time-block split); not a new-scene benchmark. Train and test scores were not supplied with the checkpoint.",
+    "val": {
+      "images": 3360,
+      "mask_mAP50": 0.9859,
+      "mask_mAP50_95": 0.6181,
+      "mask_precision": 0.9607,
+      "mask_recall": 0.9631,
+      "box_mAP50": 0.9889,
+      "box_mAP50_95": 0.8127,
+      "box_precision": 0.9634,
+      "box_recall": 0.966
+    }
+  },
+  "validation": "Three test-split frames (bright North, dimmed East, dark Northwest) compared against independent Ultralytics inference under the embedded runtime versions on a desktop; not an accuracy benchmark, and not yet run on a phone or headset",
+  "known_behaviour": "On some frames the end-to-end head returns two or three near-identical rows that share the confidence (seen on the test frame South_bright_665.jpg: 0.39, 0.38, 0.25); the apps keep the strongest row.",
+  "intended_dataset": {
+    "archive": "HoloCube_Orientation_Triangle_YOLO26_16800frames.zip",
+    "sha256": "a9570dd2e0ef962a1053652dc59a95b265050b8363f5acae0b61ac800cf63bfb",
+    "counts": {
+      "train": 11760,
+      "val": 3360,
+      "test": 1680
+    },
+    "source_video": "Eight phone recordings (one per direction), each joining a bright, a dimmed, and a dark-room clip; 1920 x 1080; 700 frames taken evenly from each clip",
+    "labels": "Semi-automatic: 104 hand-marked triangles, a YOLO26n keypoint model trained on them, temporal smoothing; 48 random frames spot-checked visually; 16,141 labeled images and 659 with an empty label file; first-pass labels, weakest for the diagonal directions and in bright light",
+    "note": "Prepared in this project on 2026-11-15 and used to train this checkpoint in the Colab notebook."
+  }
+}

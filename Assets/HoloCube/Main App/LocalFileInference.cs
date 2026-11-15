@@ -13,7 +13,8 @@ namespace HoloCube.QuestYOLO
     /// its confidence, and the inference time. Images come from the shared
     /// Pictures/HoloCube Test Dataset folder (after the image permission is granted) and from
     /// this app's own files folder of the same name. The panel is built at runtime, so the
-    /// saved scene needs no changes. Only the Transmitter Detection Model exists today.
+    /// saved scene needs no changes. The Orientation Detection Model runs on the same image
+    /// after the transmitter and its direction and triangle are added to the result text.
     /// </summary>
     public sealed class LocalFileInference : IDisposable
     {
@@ -48,6 +49,9 @@ namespace HoloCube.QuestYOLO
         public int ImageCount => files.Count;
         public string CurrentFile => index >= 0 && index < files.Count ? files[index] : null;
         public List<Detection> LastDetections { get; private set; }
+        /// <summary>The Orientation Detection Model's result for the last run, or null.</summary>
+        public OrientationResult? LastOrientation { get; private set; }
+        private bool lastOrientationRan;
 
         public LocalFileInference(Transform head, Func<TransmitterInference> engine, Func<float> confidence)
         {
@@ -203,6 +207,8 @@ namespace HoloCube.QuestYOLO
             while (detection.MoveNext()) yield return null;
             float elapsed = Time.realtimeSinceStartup - started;
             LastDetections = result ?? new List<Detection>();
+            lastOrientationRan = detector.LastOrientationRan;
+            LastOrientation = lastOrientationRan ? detector.LastOrientation : null;
             lastRunMillis = Mathf.RoundToInt(elapsed * 1000f);
             lastRunThreshold = confidence();
             DrawBox(LastDetections);
@@ -293,17 +299,22 @@ namespace HoloCube.QuestYOLO
                 detail.text = IsRunning ? "Running the model…" : "Press A to run the model";
                 return;
             }
+            // The Orientation Detection Model runs on the same image after the transmitter.
+            string direction = !lastOrientationRan ? string.Empty
+                : LastOrientation.HasValue ? $" · orientation {LastOrientation.Value.Name}" : " · no orientation";
+            string triangle = LastOrientation.HasValue ? OrientationDetail(LastOrientation.Value) : string.Empty;
             var detections = LastDetections;
             if (detections == null || detections.Count == 0)
             {
-                status.text = $"{name} {position} · {size} · no transmitter above {lastRunThreshold * 100f:0}% · {lastRunMillis} ms";
-                detail.text = string.Empty;
+                status.text = $"{name} {position} · {size} · no transmitter above {lastRunThreshold * 100f:0}%{direction} · {lastRunMillis} ms";
+                detail.text = triangle;
                 return;
             }
             var detection = detections[0];
-            status.text = $"{name} {position} · {size} · {detections.Count} transmitter · {lastRunMillis} ms";
+            status.text = $"{name} {position} · {size} · {detections.Count} transmitter{direction} · {lastRunMillis} ms";
             detail.text = $"Transmitter {detection.Confidence:P0} · box left {detection.Box.x:0}, top {detection.Box.y:0}, " +
-                $"right {detection.Box.z:0}, bottom {detection.Box.w:0} px";
+                $"right {detection.Box.z:0}, bottom {detection.Box.w:0} px" +
+                (triangle.Length > 0 ? "\n" + triangle : string.Empty);
         }
 
         private void Scan()
@@ -351,6 +362,11 @@ namespace HoloCube.QuestYOLO
         }
 
         /// <summary>Android 13+ reads shared images with READ_MEDIA_IMAGES; Android 12 with READ_EXTERNAL_STORAGE.</summary>
+        /// <summary>"North 93% · triangle (x, y) (x, y) (x, y) px" in original image pixels.</summary>
+        public static string OrientationDetail(OrientationResult orientation) =>
+            $"{orientation.Name} {orientation.Confidence:P0} · triangle ({orientation.A.x:0}, {orientation.A.y:0}) " +
+            $"({orientation.B.x:0}, {orientation.B.y:0}) ({orientation.C.x:0}, {orientation.C.y:0}) px";
+
         public static string ImagePermission()
         {
             int sdk = 0;

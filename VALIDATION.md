@@ -1,5 +1,48 @@
 # HoloCube validation
 
+## Orientation Detection Model — November 15, 2026
+
+- HoloCube **0.10 (code 10)** adds the eight-class **Orientation Detection Model**
+  (`holocube_orientation.pt`, deployed SHA-256 `71326fcb…`, re-saved from the supplied
+  `best.pt` `d92db885…` by `Tools/make-orientation-deployment.py`): the extended Python
+  loader, `OrientationDetectionModel`, `OrientationResult`, `OrientationFilter`, a second
+  640 × 640 capture and worker call in `TransmitterInference`, the direction on the AR
+  label, status line, Settings page, and Local File Inference text, and packaging plus
+  APK guards for the second checkpoint. The transmitter checkpoint is unchanged.
+
+### Passed on the development computer
+
+- `.build-tools/pt/bin/python Tools/validate-pt.py` (Python 3.8.20, PyTorch 1.8.1+cpu,
+  NumPy 1.19.5): the three transmitter frames still match after the loader refactor, and
+  the three orientation frames (bright North, dimmed East, dark Northwest) match
+  Ultralytics 8.4.56: same class, confidence and box identical to the printed precision,
+  triangle corners identical. Blank input gives no confident orientation, each loader
+  rejects the other model's checkpoint, a mismatched startup reference and changed weights
+  are rejected, and the packaged entry point (bottom-row-first RGBA) reproduces the
+  reference.
+- `bash Tools/run-unity.sh Validate`: `HOLOCUBE_VALIDATION_PASSED`, including the new
+  `OrientationFilter` row and coordinate checks; no C# compile errors.
+- `bash Tools/run-unity.sh Build`: `Build Finished, Result: Success`;
+  `HOLOCUBE_TRANSMITTER_PACKAGE_PASSED` and `HOLOCUBE_ORIENTATION_PACKAGE_PASSED` (exactly
+  the two checksum-verified checkpoints and both startup references are in the APK);
+  `aapt` confirms 0.10 / code 10. `Builds/HoloCube.apk`, 119,005,864 bytes, SHA-256
+  `d40d593cf7104ae8d5cc4a62da1645402ba068c76d1ba2f050bb45243ceb2055`. The build
+  regenerated `QuestYOLO.unity`, which now carries `MainApp.OrientationDetection` and
+  `MaxOrientationAge`.
+
+### Not verified
+
+- **Not run on a headset.** No Quest was connected: the orientation model's startup
+  check on ARM, its inference time, the two simultaneous GPU readbacks, the kept-alive
+  box while the second pass runs, and the label text in AR are all untested on hardware.
+- The model's accuracy is only known from its own training record (validation mask
+  mAP50 0.986 on same-room frames recorded with a phone, not the headset camera). Its
+  labels are first-pass semi-automatic labels, weakest for the diagonal directions and in
+  bright light.
+- The triangle is not drawn in AR; only the direction name and confidence are shown.
+
+---
+
 ## In-Device Local File Inference — November 7, 2026
 
 - HoloCube **0.9 (code 9)**, package `com.developer27.holocube`, installed on the Quest 3S

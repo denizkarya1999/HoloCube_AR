@@ -1,6 +1,6 @@
 # Agent Instructions — HoloCube
 
-A standalone Quest 3 / 3S app with an on-device Transmitter Recognition Model (a single-class trained YOLO26n detector) that loads the supplied `holocube_transmitter.pt` checkpoint using embedded Python/PyTorch. Start in `Assets/HoloCube/`: `Main App`, `Transmitter Inference`, and `Transmitter Model` are the three runtime parts. Meta's original camera samples remain as supporting assets and references; `QuestYOLO.unity` is the app's only build scene.
+A standalone Quest 3 / 3S app with an on-device Transmitter Recognition Model (a single-class trained YOLO26n detector) that loads the supplied `holocube_transmitter.pt` checkpoint using embedded Python/PyTorch, plus an eight-class Orientation Detection Model (`holocube_orientation.pt`, YOLO26n-seg, in `Assets/HoloCube/Orientation Model`) that runs after it on each frame. Start in `Assets/HoloCube/`: `Main App`, `Transmitter Inference`, and `Transmitter Model` are the three runtime parts. Meta's original camera samples remain as supporting assets and references; `QuestYOLO.unity` is the app's only build scene.
 
 ## Source-of-truth files (read these first, do not duplicate their contents in this file)
 

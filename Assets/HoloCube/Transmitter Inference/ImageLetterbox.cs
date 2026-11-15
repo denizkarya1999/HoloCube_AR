@@ -42,5 +42,12 @@ namespace HoloCube.QuestYOLO
                 Mathf.Clamp((box.z - Padding.x) / Scale, 0, ImageSize.x),
                 Mathf.Clamp((box.w - Padding.y) / Scale, 0, ImageSize.y));
         }
+
+        public Vector2 ToOriginalPoint(Vector2 point)
+        {
+            return new Vector2(
+                Mathf.Clamp((point.x - Padding.x) / Scale, 0, ImageSize.x),
+                Mathf.Clamp((point.y - Padding.y) / Scale, 0, ImageSize.y));
+        }
     }
 }

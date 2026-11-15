@@ -45,11 +45,20 @@ namespace HoloCube.QuestYOLO
         [Min(0)] public float DetectionInterval = 0.1f;
         [Tooltip("Hide results older than this many seconds.")]
         [Min(0.1f)] public float MaxResultAge = 0.75f;
+        [Tooltip("Also run the Orientation Detection Model on each frame (640 x 640 input, several times slower).")]
+        public bool OrientationDetection = true;
+        [Tooltip("Keep showing the last orientation for this many seconds.")]
+        [Min(0.1f)] public float MaxOrientationAge = 5f;
 
         private TransmitterInference inference;
         private LocalFileInference localFiles;
         private CameraVideoCapture videoCapture;
         private IEnumerator pendingDetection;
+        private List<Detection> shownDetections;
+        private Pose shownPose;
+        private OrientationResult? lastOrientation;
+        private float lastOrientationTime = float.NegativeInfinity;
+        private bool lastOrientationRan;
         private DateTime lastCameraTimestamp;
         private float nextCaptureTime;
         private bool userPaused;
@@ -304,9 +313,11 @@ namespace HoloCube.QuestYOLO
             lastCameraTimestamp = CameraAccess.Timestamp;
             var cameraPose = CameraAccess.GetCameraPose();
             float captureTime = Time.unscaledTime;
+            inference.OrientationEnabled = OrientationDetection;
             pendingDetection = inference.Detect(
                 image, Confidence,
-                detections => ShowDetections(detections, cameraPose, captureTime));
+                detections => ShowDetections(detections, cameraPose, captureTime),
+                ShowOrientation);
         }
 
         private void ContinueDetection()
@@ -315,6 +326,8 @@ namespace HoloCube.QuestYOLO
 
             // The first step copies the image now, before the camera changes it.
             // Later steps poll the background PyTorch worker without blocking rendering.
+            // While the slower orientation pass runs, the world-placed box of this frame stays up.
+            if (inference.OrientationRunning && shownDetections != null) Overlay.KeepAlive();
             if (pendingDetection.MoveNext()) return;
 
             CancelDetection();
@@ -325,11 +338,40 @@ namespace HoloCube.QuestYOLO
         {
             float age = Time.unscaledTime - captureTime;
             if (CameraAccess.IsPlaying && !userPaused && age <= MaxResultAge)
-                Overlay.Draw(detections, inference.ImageSize, inference.Labels, cameraPose);
+            {
+                shownDetections = detections;
+                shownPose = cameraPose;
+                Overlay.Draw(detections, inference.ImageSize, inference.Labels, cameraPose, RecentOrientation());
+            }
             else
+            {
+                shownDetections = null;
                 Overlay.Clear();
+            }
 
-            SetStatus($"HoloCube · {detections.Count} transmitters · {age * 1000:0} ms · ~ means approximate depth");
+            SetStatus($"HoloCube · {detections.Count} transmitters · {OrientationStatus()}{age * 1000:0} ms · ~ means approximate depth");
+        }
+
+        // The orientation pass finishes later than the transmitter pass of the same frame.
+        // Redraw that frame's world-placed boxes with the direction added to the label.
+        private void ShowOrientation(OrientationResult? orientation)
+        {
+            lastOrientation = orientation;
+            lastOrientationTime = Time.unscaledTime;
+            lastOrientationRan = true;
+            if (shownDetections != null && CameraAccess.IsPlaying && !userPaused)
+                Overlay.Draw(shownDetections, inference.ImageSize, inference.Labels, shownPose, orientation);
+        }
+
+        private OrientationResult? RecentOrientation() =>
+            Time.unscaledTime - lastOrientationTime <= MaxOrientationAge ? lastOrientation : null;
+
+        private string OrientationStatus()
+        {
+            if (!OrientationDetection || !lastOrientationRan) return string.Empty;
+            var orientation = RecentOrientation();
+            return orientation.HasValue
+                ? $"{orientation.Value.Name} {orientation.Value.Confidence:P0} · " : "no orientation · ";
         }
 
         private void RequestPermissions()
@@ -424,6 +466,7 @@ namespace HoloCube.QuestYOLO
                     return $"<size=32><b>Settings</b></size>\n" +
                         $"> <b>Confidence Thresholds</b>: {Confidence:0.00}\n" +
                         $"<b>Number of boxes (fixed)</b>: {TransmitterRecognitionModel.MaxDetections}\n" +
+                        $"<b>Orientation model</b>: {OrientationModelState()}\n" +
                         SettingsPanel.HelpText;
                 default:
                     return string.IsNullOrEmpty(statusMessage) ? "HoloCube" : statusMessage;
@@ -487,10 +530,18 @@ namespace HoloCube.QuestYOLO
             SetStatus("Detection stopped\n" + error.Message);
         }
 
+        private string OrientationModelState()
+        {
+            if (!OrientationDetection) return "off";
+            if (inference == null || !inference.IsReady) return "loading";
+            return inference.OrientationReady ? "on (North to Northwest)" : "unavailable: " + inference.OrientationError;
+        }
+
         private void CancelDetection()
         {
             var pending = pendingDetection;
             pendingDetection = null;
+            shownDetections = null;
             // Disposing the iterator discards its result; native work can finish safely.
             (pending as IDisposable)?.Dispose();
         }

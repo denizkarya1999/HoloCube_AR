@@ -14,14 +14,16 @@ namespace HoloCube.QuestYOLO
         private readonly RenderTexture target;
         private AsyncGPUReadbackRequest readback;
         private bool requested;
+        private readonly int size;
 
-        public ImagePreprocessor(Shader shader)
+        public ImagePreprocessor(Shader shader, int size = TransmitterRecognitionModel.InputSize)
         {
+            this.size = size;
             if (shader == null) throw new InvalidOperationException("Assign the letterbox shader.");
             if (!SystemInfo.supportsAsyncGPUReadback)
                 throw new NotSupportedException("Camera preprocessing requires GPU readback support.");
             material = new Material(shader);
-            target = new RenderTexture(TransmitterRecognitionModel.InputSize, TransmitterRecognitionModel.InputSize, 0,
+            target = new RenderTexture(size, size, 0,
                 RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
             target.Create();
         }
@@ -30,7 +32,7 @@ namespace HoloCube.QuestYOLO
         {
             FinishReadback();
             ImageSize = new Vector2Int(image.width, image.height);
-            Layout = new ImageLetterbox(ImageSize, new Vector2Int(TransmitterRecognitionModel.InputSize, TransmitterRecognitionModel.InputSize));
+            Layout = new ImageLetterbox(ImageSize, new Vector2Int(size, size));
             material.SetVector("_ImageRect", Layout.ShaderRectangle);
             material.SetFloat("_SourceIsSRGB", GraphicsFormatUtility.IsSRGBFormat(image.graphicsFormat) ? 1 : 0);
             var oldTarget = RenderTexture.active;

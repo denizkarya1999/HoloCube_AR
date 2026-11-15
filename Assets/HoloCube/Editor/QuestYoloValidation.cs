@@ -19,7 +19,7 @@ namespace HoloCube.Editor
             CheckSavedScene();
             CheckCoordinatesAndDecoder();
             CheckRealModel();
-            Debug.Log("HOLOCUBE_VALIDATION_PASSED: transmitter scene, letterbox/decoder checks, trained .pt inference matches reference.");
+            Debug.Log("HOLOCUBE_VALIDATION_PASSED: transmitter scene, letterbox/decoder checks, trained .pt inference matches reference; orientation rows, checkpoint, and reference triangles match.");
         }
 
         private static void CheckSavedScene()
@@ -108,6 +108,36 @@ namespace HoloCube.Editor
                 "Local file box mapping");
             Require(LocalFileInference.FitSize(new Vector2Int(0, 720), new Vector2(1040, 560)) == Vector2.zero,
                 "Local file empty image");
+
+            // Orientation Detection Model: 5 rows of 12 values in 640 x 640 pixels. A 1920 x 1080
+            // frame is scaled by one third with 140-pixel bands above and below.
+            var wide = new ImageLetterbox(new Vector2Int(1920, 1080),
+                new Vector2Int(OrientationDetectionModel.InputSize, OrientationDetectionModel.InputSize));
+            Require(wide.ResizedSize == new Vector2Int(640, 360) && wide.Padding == new Vector2Int(0, 140), "Orientation padding");
+            var orientationRows = new float[OrientationDetectionModel.OutputRows * OrientationDetectionModel.OutputColumns];
+            Array.Copy(new float[]
+            {
+                319.2f, 331.7f, 354.5f, 374.3f, 0.5f, 4, 318.5f, 330.5f, 357.5f, 330.5f, 339f, 372.5f,   // South, weaker
+                319.2f, 331.7f, 354.5f, 374.3f, 0.917f, 0, 318.5f, 330.5f, 357.5f, 330.5f, 339f, 372.5f, // North
+                319.2f, 331.7f, 354.5f, 374.3f, 0.99f, 8, 318.5f, 330.5f, 357.5f, 330.5f, 339f, 372.5f   // No class 8.
+            }, orientationRows, 36);
+            var orientations = OrientationFilter.Read(orientationRows, wide, 0.35f, OrientationDetectionModel.MaxDetections);
+            Require(orientations.Count == 1 && orientations[0].Name == "North" &&
+                Mathf.Approximately(orientations[0].Confidence, 0.917f), "Only the strongest valid orientation is kept");
+            Require(Mathf.Abs(orientations[0].Box.x - 957.6f) < 0.01f && Mathf.Abs(orientations[0].Box.y - 575.1f) < 0.01f &&
+                Mathf.Abs(orientations[0].A.x - 955.5f) < 0.01f && Mathf.Abs(orientations[0].A.y - 571.5f) < 0.01f &&
+                Mathf.Abs(orientations[0].B.x - 1072.5f) < 0.01f && Mathf.Abs(orientations[0].C.x - 1017f) < 0.01f &&
+                Mathf.Abs(orientations[0].C.y - 697.5f) < 0.01f, "Orientation box and triangle map to camera pixels");
+            Require(OrientationFilter.Read(orientationRows, wide, 0.35f, 5).Count == 2, "Class 8 is not an orientation");
+            Require(OrientationFilter.Read(orientationRows, wide, 0.95f, 5).Count == 0, "No orientation below the threshold");
+            bool rejectedOrientation = false;
+            try { OrientationFilter.Read(new float[300 * 6], wide, 0.35f, 1); }
+            catch (InvalidOperationException) { rejectedOrientation = true; }
+            Require(rejectedOrientation, "Reject transmitter rows as orientation rows");
+            Require(OrientationDetectionModel.ClassNames.Length == 8 && OrientationDetectionModel.ClassNames[7] == "Northwest",
+                "Eight orientation classes");
+            Require(File.Exists(PyTorchAndroidBuild.OrientationModelFolder + OrientationDetectionModel.CheckpointFile),
+                "Orientation checkpoint file");
         }
 
         private static void CheckRealModel()
@@ -133,7 +163,8 @@ namespace HoloCube.Editor
             }
             string output = process.StandardOutput.ReadToEnd();
             string errors = process.StandardError.ReadToEnd();
-            Require(process.ExitCode == 0 && output.Contains("HOLOCUBE_PT_PARITY_PASSED"), "Real .pt inference: " + output + errors);
+            Require(process.ExitCode == 0 && output.Contains("HOLOCUBE_PT_PARITY_PASSED") &&
+                output.Contains("HOLOCUBE_ORIENTATION_PARITY_PASSED"), "Real .pt inference: " + output + errors);
             Debug.Log(output.Trim());
         }
 

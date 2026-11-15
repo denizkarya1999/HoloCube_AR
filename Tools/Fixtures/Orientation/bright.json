@@ -1,0 +1,35 @@
+{
+  "checkpoint_sha256": "71326fcb52f994cf7373120ee42abe5693dc0051a78fc735e2f45e2c540b4579",
+  "supplied_checkpoint_sha256": "d92db885573120c3c2b862a6c75e7fddce88227d2cf77e5243434cd11feadbdb",
+  "source_image": "North_bright_640.jpg",
+  "source_sha256": "1be122de7816d2b7d0a33eaadd27db7f92831b890f17d6514fffb79924e8edac",
+  "source_dataset": "HoloCube_Orientation_Triangle_YOLO26_16800frames.zip",
+  "source_dataset_sha256": "a9570dd2e0ef962a1053652dc59a95b265050b8363f5acae0b61ac800cf63bfb",
+  "source_split": "test",
+  "width": 1920,
+  "height": 1080,
+  "input_size": 640,
+  "threshold": 0.35,
+  "oracle": "Ultralytics 8.4.56 / PyTorch 2.15.0+cu132, supplied unfused segmentation model, ops.process_mask",
+  "detections": [
+    {
+      "classId": 0,
+      "className": "North",
+      "confidence": 0.9170085191726685,
+      "box": [
+        319.172119140625,
+        331.7406005859375,
+        354.5297546386719,
+        374.2792663574219
+      ],
+      "triangle": [
+        318.5,
+        330.5,
+        357.5,
+        330.5,
+        339.0,
+        372.5
+      ]
+    }
+  ]
+}

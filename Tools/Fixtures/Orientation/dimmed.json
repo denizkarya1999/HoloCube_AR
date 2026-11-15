@@ -1,0 +1,35 @@
+{
+  "checkpoint_sha256": "71326fcb52f994cf7373120ee42abe5693dc0051a78fc735e2f45e2c540b4579",
+  "supplied_checkpoint_sha256": "d92db885573120c3c2b862a6c75e7fddce88227d2cf77e5243434cd11feadbdb",
+  "source_image": "East_dimmed_665.jpg",
+  "source_sha256": "fcd2d8ed2b7a75aaa7f5369d802e49d1f9434e30907a21ac58108f5ff137a0e0",
+  "source_dataset": "HoloCube_Orientation_Triangle_YOLO26_16800frames.zip",
+  "source_dataset_sha256": "a9570dd2e0ef962a1053652dc59a95b265050b8363f5acae0b61ac800cf63bfb",
+  "source_split": "test",
+  "width": 1920,
+  "height": 1080,
+  "input_size": 640,
+  "threshold": 0.35,
+  "oracle": "Ultralytics 8.4.56 / PyTorch 2.15.0+cu132, supplied unfused segmentation model, ops.process_mask",
+  "detections": [
+    {
+      "classId": 2,
+      "className": "East",
+      "confidence": 0.85997474193573,
+      "box": [
+        255.54000854492188,
+        272.0346984863281,
+        283.2001037597656,
+        306.1451110839844
+      ],
+      "triangle": [
+        254.5,
+        270.5,
+        285.5,
+        270.5,
+        269.5,
+        304.5
+      ]
+    }
+  ]
+}

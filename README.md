@@ -18,7 +18,11 @@ Version 0.8 carries the checkpoint supplied on November 6, 2026, trained on the
 1,323-frame pyramid dataset; its checksum, training metrics, and dataset context are
 recorded in the model's `provenance.json`. Version 0.9 adds **In-Device Local File
 Inference** (Settings → right trigger): the same model run on test images stored on the
-headset, with the box, confidence, and inference time shown.
+headset, with the box, confidence, and inference time shown. Version 0.10 adds the
+**Orientation Detection Model** (`holocube_orientation.pt`, YOLO26n-seg, eight classes
+North clockwise to Northwest): after each frame's transmitter result it names the compass
+direction the pyramid is seen from, added to the box label as `Transmitter  98%  ·  North  93%`
+and to the status line and the Local File Inference text.
 A computer is only needed to build or install the app.
 
 ## Android phone app
@@ -238,6 +242,13 @@ The model predicts only **Transmitter** (class ID `0`). Its label is stored in
 [transmitter.names.txt](Assets/HoloCube/Transmitter%20Model/transmitter.names.txt).
 Only the strongest valid transmitter receives a box, even when multiple candidates
 are visible. No box is shown if none meets the confidence threshold, which defaults to 35%.
+
+The Orientation Detection Model predicts eight classes, `0: North` clockwise to
+`7: Northwest` (`OrientationDetectionModel.ClassNames`). Only the strongest valid
+orientation above the same threshold is shown. When no transmitter box exists for a frame,
+the orientation model's own box carries the label. The headset shows the direction as
+text; the triangle's corners are computed and listed on the Local File Inference page but
+not drawn in AR.
 
 ### GitHub issue labels
 

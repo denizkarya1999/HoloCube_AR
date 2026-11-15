@@ -1,0 +1,35 @@
+{
+  "checkpoint_sha256": "71326fcb52f994cf7373120ee42abe5693dc0051a78fc735e2f45e2c540b4579",
+  "supplied_checkpoint_sha256": "d92db885573120c3c2b862a6c75e7fddce88227d2cf77e5243434cd11feadbdb",
+  "source_image": "Northwest_dark_665.jpg",
+  "source_sha256": "22fb081998ff461652d629c73987546e1d5e285c6888917f0a05ab5b2f8f6120",
+  "source_dataset": "HoloCube_Orientation_Triangle_YOLO26_16800frames.zip",
+  "source_dataset_sha256": "a9570dd2e0ef962a1053652dc59a95b265050b8363f5acae0b61ac800cf63bfb",
+  "source_split": "test",
+  "width": 1920,
+  "height": 1080,
+  "input_size": 640,
+  "threshold": 0.35,
+  "oracle": "Ultralytics 8.4.56 / PyTorch 2.15.0+cu132, supplied unfused segmentation model, ops.process_mask",
+  "detections": [
+    {
+      "classId": 7,
+      "className": "Northwest",
+      "confidence": 0.8387261629104614,
+      "box": [
+        280.6641540527344,
+        242.12335205078125,
+        305.4229431152344,
+        275.5220031738281
+      ],
+      "triangle": [
+        278.5,
+        242.5,
+        305.5,
+        242.5,
+        293.5,
+        277.5
+      ]
+    }
+  ]
+}

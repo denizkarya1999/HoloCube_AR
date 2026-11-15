@@ -35,30 +35,47 @@ namespace HoloCube.QuestYOLO
             foreach (var box in boxes) box.gameObject.SetActive(false);
         }
 
-        public void Draw(List<Detection> detections, Vector2Int imageSize, string[] labels, Pose cameraPose)
+        /// <summary>Boxes are placed in the world, so a shown overlay stays valid while the
+        /// slower orientation pass of the same frame is still running.</summary>
+        public void KeepAlive() => lastDrawTime = Time.unscaledTime;
+
+        public void Draw(List<Detection> detections, Vector2Int imageSize, string[] labels, Pose cameraPose,
+            OrientationResult? orientation = null)
         {
             Clear();
             lastDrawTime = Time.unscaledTime;
             int visibleBoxes = 0;
+            string direction = orientation.HasValue
+                ? $"{orientation.Value.Name}  {orientation.Value.Confidence:P0}" : null;
 
             foreach (var detection in detections)
             {
-                var viewport = ToCameraViewport(detection.Box, imageSize);
-                var centerRay = CameraAccess.ViewportPointToRay(viewport.center, cameraPose);
-                float distance = FindDistance(centerRay, cameraPose, out bool approximateDepth);
-                if (distance <= 0.1f) continue;
-
-                if (!TryPlaceRectangle(viewport, cameraPose, centerRay.GetPoint(distance),
-                        out var rotation, out var size)) continue;
-
-                var box = GetBox(visibleBoxes++);
-                box.SetPositionAndRotation(centerRay.GetPoint(distance), rotation);
-                box.sizeDelta = size;
-                box.gameObject.SetActive(true);
-                var label = box.GetComponentInChildren<Text>(true);
-                label.text = $"{labels[detection.ClassId]}  {detection.Confidence:P0}" +
-                    (approximateDepth ? "  ~" : "");
+                string text = $"{labels[detection.ClassId]}  {detection.Confidence:P0}";
+                // The orientation belongs to the same pyramid: show it on the transmitter's label.
+                if (direction != null) { text += "  ·  " + direction; direction = null; }
+                if (Place(detection.Box, text, imageSize, cameraPose, visibleBoxes)) visibleBoxes++;
             }
+            // No transmitter box for this frame: the orientation model's own box carries the label.
+            if (direction != null) Place(orientation.Value.Box, direction, imageSize, cameraPose, visibleBoxes);
+        }
+
+        private bool Place(Vector4 pixels, string text, Vector2Int imageSize, Pose cameraPose, int index)
+        {
+            var viewport = ToCameraViewport(pixels, imageSize);
+            var centerRay = CameraAccess.ViewportPointToRay(viewport.center, cameraPose);
+            float distance = FindDistance(centerRay, cameraPose, out bool approximateDepth);
+            if (distance <= 0.1f) return false;
+
+            if (!TryPlaceRectangle(viewport, cameraPose, centerRay.GetPoint(distance),
+                    out var rotation, out var size)) return false;
+
+            var box = GetBox(index);
+            box.SetPositionAndRotation(centerRay.GetPoint(distance), rotation);
+            box.sizeDelta = size;
+            box.gameObject.SetActive(true);
+            var label = box.GetComponentInChildren<Text>(true);
+            label.text = text + (approximateDepth ? "  ~" : "");
+            return true;
         }
 
         private static Rect ToCameraViewport(Vector4 box, Vector2Int imageSize)
