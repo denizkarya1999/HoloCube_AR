@@ -20,9 +20,10 @@ recorded in the model's `provenance.json`. Version 0.9 adds **In-Device Local Fi
 Inference** (Settings → right trigger): the same model run on test images stored on the
 headset, with the box, confidence, and inference time shown. Version 0.10 adds the
 **Orientation Detection Model** (`holocube_orientation.pt`, YOLO26n-seg, eight classes
-North clockwise to Northwest): after each frame's transmitter result it names the compass
-direction the pyramid is seen from, added to the box label as `Transmitter  98%  ·  North  93%`
-and to the status line and the Local File Inference text.
+North clockwise to Northwest): it names the compass direction the pyramid is seen from,
+added to the box label as `Transmitter  98%  ·  North  93%` and to the status line and the
+Local File Inference text. Since 0.11 the transmitter comes first: the orientation model
+runs only when a transmitter was detected, and its result counts only inside that box.
 A computer is only needed to build or install the app.
 
 ## Android phone app
@@ -245,8 +246,8 @@ are visible. No box is shown if none meets the confidence threshold, which defau
 
 The Orientation Detection Model predicts eight classes, `0: North` clockwise to
 `7: Northwest` (`OrientationDetectionModel.ClassNames`). Only the strongest valid
-orientation above the same threshold is shown. When no transmitter box exists for a frame,
-the orientation model's own box carries the label. The headset shows the direction as
+orientation above the same threshold is shown, and only when it lies inside the
+transmitter's box; without a transmitter box no orientation is shown. The headset shows the direction as
 text; the triangle's corners are computed and listed on the Local File Inference page but
 not drawn in AR.
 

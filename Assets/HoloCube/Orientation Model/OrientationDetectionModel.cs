@@ -13,6 +13,9 @@ namespace HoloCube.QuestYOLO
         public const int OutputColumns = 12;
         // One hologram is in view, so only the strongest valid orientation is kept.
         public const int MaxDetections = 1;
+        // An orientation is shown only when its box centre lies inside the transmitter box
+        // grown by this fraction of its width and height on every side.
+        public const float TransmitterBoxMargin = 0.25f;
         // Class IDs 0-7, clockwise from North.
         public static readonly string[] ClassNames =
             { "North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest" };

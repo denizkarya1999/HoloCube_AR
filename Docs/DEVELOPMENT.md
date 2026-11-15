@@ -98,18 +98,24 @@ ones, because each legacy save has different bytes. Both hashes are in the folde
   failure is logged as `HOLOCUBE_ORIENTATION_UNAVAILABLE`, shown on the Settings page, and
   leaves the transmitter usable.
 - `TransmitterInference.Detect` captures the frame twice at the start (320 and 640
-  letterbox), reports the transmitter result first, then submits the 640 image
-  (`PyTorchWorker.submitOrientation`) and reports through its second callback.
+  letterbox) and reports the transmitter result first. **Only when a transmitter was
+  detected** does it submit the 640 image (`PyTorchWorker.submitOrientation`).
   `OrientationFilter.Read` reads `[5,12]` rows
-  `[x1,y1,x2,y2,confidence,class_id,ax,ay,bx,by,cx,cy]` and keeps the strongest valid one.
+  `[x1,y1,x2,y2,confidence,class_id,ax,ay,bx,by,cx,cy]`, and
+  `OrientationFilter.StrongestInside` keeps the strongest one whose box centre lies inside
+  the transmitter's box grown by 25% (`OrientationDetectionModel.TransmitterBoxMargin`).
+  The second callback reports it, or null.
 - The orientation pass is several times slower than the transmitter pass, so `MainApp`
   keeps the frame's world-placed box alive while it runs (`DetectionOverlay.KeepAlive`),
   redraws it with the direction when it arrives, and shows a direction for at most
   `MaxOrientationAge` seconds. The transmitter box therefore still appears as fast as
   before but is refreshed less often. `MainApp.OrientationDetection` switches the second
   model off in the scene; there is no headset control for it.
-- The orientation pass does not wait for a transmitter box; the two models were trained
-  on different recordings and one can find the pyramid when the other does not.
+- The model still receives the whole frame. It was trained on whole frames, and on 27
+  test frames it named the direction correctly in 0 of 21 when given only the cropped
+  transmitter box, 9 of 21 with everything outside the box painted gray, and 20 of 21 with
+  this gate-and-filter rule (25 of 27 with no gate). Cropping needs a model retrained on
+  crops.
 
 ## Local file inference
 

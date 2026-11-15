@@ -55,8 +55,6 @@ namespace HoloCube.QuestYOLO
                 if (direction != null) { text += "  ·  " + direction; direction = null; }
                 if (Place(detection.Box, text, imageSize, cameraPose, visibleBoxes)) visibleBoxes++;
             }
-            // No transmitter box for this frame: the orientation model's own box carries the label.
-            if (direction != null) Place(orientation.Value.Box, direction, imageSize, cameraPose, visibleBoxes);
         }
 
         private bool Place(Vector4 pixels, string text, Vector2Int imageSize, Pose cameraPose, int index)

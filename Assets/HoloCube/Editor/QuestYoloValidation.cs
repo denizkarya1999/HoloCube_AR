@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using HoloCube.QuestYOLO;
 using PassthroughCameraSamples.MultiObjectDetection;
@@ -134,6 +135,18 @@ namespace HoloCube.Editor
             try { OrientationFilter.Read(new float[300 * 6], wide, 0.35f, 1); }
             catch (InvalidOperationException) { rejectedOrientation = true; }
             Require(rejectedOrientation, "Reject transmitter rows as orientation rows");
+            // Transmitter first: an orientation counts only inside the transmitter's box
+            // (its box centre is about (1011, 639) in camera pixels here).
+            var allOrientations = OrientationFilter.Read(orientationRows, wide, 0.35f, 5);
+            var around = new List<Detection> { new Detection(0, 0.9f, new Vector4(940, 560, 1090, 720)) };
+            var elsewhere = new List<Detection> { new Detection(0, 0.9f, new Vector4(100, 100, 300, 300)) };
+            var beside = new Vector4(1030, 560, 1180, 720);
+            var inside = OrientationFilter.StrongestInside(allOrientations, around);
+            Require(inside.HasValue && inside.Value.Name == "North", "Strongest orientation inside the transmitter box");
+            Require(!OrientationFilter.StrongestInside(allOrientations, elsewhere).HasValue, "No orientation outside the transmitter box");
+            Require(!OrientationFilter.StrongestInside(allOrientations, new List<Detection>()).HasValue, "No orientation without a transmitter");
+            Require(OrientationFilter.InsideBox(allOrientations[0], beside) && !OrientationFilter.InsideBox(allOrientations[0], beside, 0f),
+                "Transmitter box margin");
             Require(OrientationDetectionModel.ClassNames.Length == 8 && OrientationDetectionModel.ClassNames[7] == "Northwest",
                 "Eight orientation classes");
             Require(File.Exists(PyTorchAndroidBuild.OrientationModelFolder + OrientationDetectionModel.CheckpointFile),

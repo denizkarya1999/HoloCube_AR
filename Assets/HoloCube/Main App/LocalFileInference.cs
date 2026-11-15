@@ -300,8 +300,9 @@ namespace HoloCube.QuestYOLO
                 return;
             }
             // The Orientation Detection Model runs on the same image after the transmitter.
+            // It runs only when a transmitter was detected, and counts only inside its box.
             string direction = !lastOrientationRan ? string.Empty
-                : LastOrientation.HasValue ? $" · orientation {LastOrientation.Value.Name}" : " · no orientation";
+                : LastOrientation.HasValue ? $" · orientation {LastOrientation.Value.Name}" : " · no orientation inside the box";
             string triangle = LastOrientation.HasValue ? OrientationDetail(LastOrientation.Value) : string.Empty;
             var detections = LastDetections;
             if (detections == null || detections.Count == 0)

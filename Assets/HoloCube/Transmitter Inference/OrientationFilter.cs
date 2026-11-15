@@ -43,6 +43,26 @@ namespace HoloCube.QuestYOLO
             return results;
         }
 
+        /// <summary>True when the centre of the orientation's box lies inside the transmitter box grown by the margin.</summary>
+        public static bool InsideBox(OrientationResult orientation, Vector4 transmitter,
+            float margin = OrientationDetectionModel.TransmitterBoxMargin)
+        {
+            float growX = (transmitter.z - transmitter.x) * margin, growY = (transmitter.w - transmitter.y) * margin;
+            float x = (orientation.Box.x + orientation.Box.z) / 2f, y = (orientation.Box.y + orientation.Box.w) / 2f;
+            return x >= transmitter.x - growX && x <= transmitter.z + growX &&
+                y >= transmitter.y - growY && y <= transmitter.w + growY;
+        }
+
+        /// <summary>The transmitter comes first: the strongest candidate (sorted by confidence)
+        /// inside its box, or null when there is no transmitter or nothing lies inside.</summary>
+        public static OrientationResult? StrongestInside(List<OrientationResult> candidates, List<Detection> transmitters)
+        {
+            if (transmitters == null || transmitters.Count == 0) return null;
+            foreach (var candidate in candidates)
+                if (InsideBox(candidate, transmitters[0].Box)) return candidate;
+            return null;
+        }
+
         private static bool Finite(float number) => !float.IsNaN(number) && !float.IsInfinity(number);
     }
 }

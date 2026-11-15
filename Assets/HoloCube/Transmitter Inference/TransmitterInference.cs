@@ -12,7 +12,7 @@ namespace HoloCube.QuestYOLO
         public string[] Labels { get; }
         public bool IsReady => !disposed && worker.Call<bool>("isReady");
         public bool IsBusy { get; private set; }
-        /// <summary>Also run the Orientation Detection Model on each image (slower: 640 x 640 input).</summary>
+        /// <summary>Also run the Orientation Detection Model whenever a transmitter is detected (slower: 640 x 640 input).</summary>
         public bool OrientationEnabled { get; set; } = true;
         /// <summary>True once the orientation checkpoint passed its startup check on this headset.</summary>
         public bool OrientationReady => !disposed && worker.Call<bool>("isOrientationReady");
@@ -51,9 +51,10 @@ namespace HoloCube.QuestYOLO
 
         // MainApp advances this iterator every display frame. Python inference
         // runs on a separate Android thread while Unity keeps rendering.
-        // The transmitter result is reported first, as soon as it is known; the orientation
-        // model (640 x 640, several times slower) then runs on the same captured frame and
-        // reports through orientationCompleted, so the transmitter box is not held back.
+        // The transmitter result is reported first, as soon as it is known. Only when a
+        // transmitter was detected does the orientation model (640 x 640, several times
+        // slower) run on the same captured frame; its result counts only inside the
+        // transmitter's box and is reported through orientationCompleted.
         public IEnumerator Detect(Texture image, float confidence, Action<List<Detection>> completed,
             Action<OrientationResult?> orientationCompleted = null)
         {
@@ -91,8 +92,10 @@ namespace HoloCube.QuestYOLO
                 }
                 completed?.Invoke(detections);
 
-                // The orientation model does not wait for a transmitter box: the two models
-                // were trained on different recordings and one can find the pyramid alone.
+                // Transmitter first: without a transmitter box there is no orientation pass.
+                // The model sees the whole frame (it was trained on whole frames and fails
+                // on a crop); only a result inside the transmitter's box is kept.
+                withOrientation = withOrientation && detections.Count > 0;
                 OrientationResult? orientation = null;
                 if (withOrientation)
                 {
@@ -101,18 +104,18 @@ namespace HoloCube.QuestYOLO
                     worker.Call("submitOrientation", orientationPixels);
                     while (!worker.Call<bool>("isDone")) yield return null;
                     var found = OrientationFilter.Read(worker.Call<float[]>("take"), orientationImages.Layout,
-                        confidence, OrientationDetectionModel.MaxDetections);
-                    if (found.Count > 0) orientation = found[0];
-                    if (!loggedFirstOrientation && found.Count > 0)
+                        confidence, OrientationDetectionModel.OutputRows);
+                    orientation = OrientationFilter.StrongestInside(found, detections);
+                    if (!loggedFirstOrientation && orientation.HasValue)
                     {
-                        Debug.Log($"HOLOCUBE_ORIENTATION_SINGLE_TRIANGLE: {found[0].Name} selected; highest confidence; limit {OrientationDetectionModel.MaxDetections}.");
+                        Debug.Log($"HOLOCUBE_ORIENTATION_SINGLE_TRIANGLE: {orientation.Value.Name} selected inside the transmitter box; highest confidence; limit {OrientationDetectionModel.MaxDetections}.");
                         loggedFirstOrientation = true;
                     }
                 }
                 OrientationRunning = false;
                 LastOrientation = orientation;
                 LastOrientationRan = withOrientation;
-                if (withOrientation) orientationCompleted?.Invoke(orientation);
+                orientationCompleted?.Invoke(orientation);
             }
             finally
             {

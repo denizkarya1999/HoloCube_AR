@@ -45,7 +45,7 @@ namespace HoloCube.QuestYOLO
         [Min(0)] public float DetectionInterval = 0.1f;
         [Tooltip("Hide results older than this many seconds.")]
         [Min(0.1f)] public float MaxResultAge = 0.75f;
-        [Tooltip("Also run the Orientation Detection Model on each frame (640 x 640 input, several times slower).")]
+        [Tooltip("Run the Orientation Detection Model whenever a transmitter is detected (640 x 640 input, several times slower).")]
         public bool OrientationDetection = true;
         [Tooltip("Keep showing the last orientation for this many seconds.")]
         [Min(0.1f)] public float MaxOrientationAge = 5f;
@@ -341,7 +341,9 @@ namespace HoloCube.QuestYOLO
             {
                 shownDetections = detections;
                 shownPose = cameraPose;
-                Overlay.Draw(detections, inference.ImageSize, inference.Labels, cameraPose, RecentOrientation());
+                // A new transmitter box keeps the last direction until this frame's own arrives.
+                Overlay.Draw(detections, inference.ImageSize, inference.Labels, cameraPose,
+                    detections.Count > 0 ? RecentOrientation() : null);
             }
             else
             {
@@ -349,16 +351,17 @@ namespace HoloCube.QuestYOLO
                 Overlay.Clear();
             }
 
-            SetStatus($"HoloCube · {detections.Count} transmitters · {OrientationStatus()}{age * 1000:0} ms · ~ means approximate depth");
+            SetStatus($"HoloCube · {detections.Count} transmitters · {OrientationStatus(detections.Count)}{age * 1000:0} ms · ~ means approximate depth");
         }
 
-        // The orientation pass finishes later than the transmitter pass of the same frame.
-        // Redraw that frame's world-placed boxes with the direction added to the label.
+        // The orientation pass runs only after a transmitter was detected and finishes later
+        // than the transmitter pass of the same frame. Redraw that frame's world-placed box
+        // with the direction added to the label. Without a transmitter it reports null.
         private void ShowOrientation(OrientationResult? orientation)
         {
             lastOrientation = orientation;
             lastOrientationTime = Time.unscaledTime;
-            lastOrientationRan = true;
+            lastOrientationRan = inference.LastOrientationRan;
             if (shownDetections != null && CameraAccess.IsPlaying && !userPaused)
                 Overlay.Draw(shownDetections, inference.ImageSize, inference.Labels, shownPose, orientation);
         }
@@ -366,9 +369,10 @@ namespace HoloCube.QuestYOLO
         private OrientationResult? RecentOrientation() =>
             Time.unscaledTime - lastOrientationTime <= MaxOrientationAge ? lastOrientation : null;
 
-        private string OrientationStatus()
+        private string OrientationStatus(int transmitters)
         {
-            if (!OrientationDetection || !lastOrientationRan) return string.Empty;
+            // No transmitter, no orientation: the second model only runs inside a transmitter box.
+            if (!OrientationDetection || transmitters == 0 || !lastOrientationRan) return string.Empty;
             var orientation = RecentOrientation();
             return orientation.HasValue
                 ? $"{orientation.Value.Name} {orientation.Value.Confidence:P0} · " : "no orientation · ";
@@ -534,7 +538,7 @@ namespace HoloCube.QuestYOLO
         {
             if (!OrientationDetection) return "off";
             if (inference == null || !inference.IsReady) return "loading";
-            return inference.OrientationReady ? "on (North to Northwest)" : "unavailable: " + inference.OrientationError;
+            return inference.OrientationReady ? "on, after a transmitter is found" : "unavailable: " + inference.OrientationError;
         }
 
         private void CancelDetection()

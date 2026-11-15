@@ -1,5 +1,37 @@
 # HoloCube validation
 
+## 0.11: transmitter first, orientation inside its box — November 15, 2026
+
+- HoloCube **0.11 (code 11)**: the Orientation Detection Model now runs only when the
+  transmitter model detected a transmitter in the frame, and its result counts only when
+  its box centre lies inside the transmitter's box (grown by 25%). Without a transmitter
+  box no orientation is shown; the overlay's fallback box for an orientation without a
+  transmitter was removed.
+- Why the model still sees the whole frame: on 27 test-split frames (desktop, Ultralytics
+  8.4.56) the transmitter was found in 21. Orientation was right at ≥ 35% in 25 of 27 on
+  whole frames, 20 of 21 with the gate-and-filter rule, 9 of 21 when everything outside
+  the transmitter box was painted gray, and 0 of 21 when the box was cropped and enlarged
+  to the model input.
+
+### Passed on the development computer
+
+- `bash Tools/run-unity.sh Build` (which runs the scene setup and `Validate` first):
+  `HOLOCUBE_VALIDATION_PASSED`, including the new checks that an orientation is kept only
+  inside the transmitter's box, dropped outside it, and dropped without a transmitter;
+  `HOLOCUBE_PT_PARITY_PASSED` and `HOLOCUBE_ORIENTATION_PARITY_PASSED` under PyTorch 1.8.1;
+  both package guards passed; `Build Finished, Result: Success`; `aapt` confirms 0.11 /
+  code 11. `Builds/HoloCube.apk`, 119,006,004 bytes, SHA-256
+  `21cfd6ac22788ad8f968c95193b621fd2ea754d682f76cb66514a31b3de0e7b0`.
+
+### Not verified
+
+- **Not run on a headset.** No Quest was connected. Everything listed as unverified for
+  0.10 below still applies. The same rule and Python runtime were checked on a Pixel 8a
+  in the Android app (see that repository's `VALIDATION.md`), which does not cover the
+  Unity capture path, the Java worker, or the AR label.
+
+---
+
 ## Orientation Detection Model — November 15, 2026
 
 - HoloCube **0.10 (code 10)** adds the eight-class **Orientation Detection Model**
