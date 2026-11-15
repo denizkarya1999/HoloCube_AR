@@ -23,12 +23,26 @@
   code 11. `Builds/HoloCube.apk`, 119,006,004 bytes, SHA-256
   `21cfd6ac22788ad8f968c95193b621fd2ea754d682f76cb66514a31b3de0e7b0`.
 
+### Passed on the connected Quest 3S
+
+- `adb -s 3487C10J5K07Q5 install -r Builds/HoloCube.apk` over 0.9 succeeded; package
+  information confirms 0.11 / code 11 (`hzdb` is not installed on this workstation, so
+  plain `adb` was used).
+- Cold launch log: `HOLOCUBE_PT_DEVICE_PARITY_PASSED` and `HOLOCUBE_PT_READY`, then 1.1 s
+  later `HOLOCUBE_ORIENTATION_DEVICE_PARITY_PASSED` and `HOLOCUBE_ORIENTATION_READY`: the
+  orientation checkpoint loads on the headset and reproduces its reference class,
+  confidence, box, and triangle. The first camera frame returned 300 transmitter rows in
+  **190 ms**. No error or `HOLOCUBE_ORIENTATION_UNAVAILABLE` line appeared.
+
 ### Not verified
 
-- **Not run on a headset.** No Quest was connected. Everything listed as unverified for
-  0.10 below still applies. The same rule and Python runtime were checked on a Pixel 8a
-  in the Android app (see that repository's `VALIDATION.md`), which does not cover the
-  Unity capture path, the Java worker, or the AR label.
+- **The orientation pass has not run on a camera frame on the headset.** The headset was
+  not worn and went to sleep after the first frame, and no transmitter was in view, so
+  there is no `HOLOCUBE_ORIENTATION_CAMERA_FRAME` timing yet. The two simultaneous GPU
+  readbacks, the kept-alive box during the second pass, the direction on the AR label,
+  and the Local File Inference text are still unchecked on hardware.
+- No orientation test images were copied to the headset's `Pictures/HoloCube Test
+  Dataset` folder (it holds the 18 transmitter samples).
 
 ---
 
