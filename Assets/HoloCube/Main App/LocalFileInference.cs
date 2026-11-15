@@ -34,6 +34,7 @@ namespace HoloCube.QuestYOLO
         private readonly GameObject root;
         private readonly RawImage picture;
         private readonly DialogPanel boxOutline;
+        private readonly TriangleOutline triangleOutline;
         private readonly Text boxLabel;
         private readonly Text status;
         private readonly Text detail;
@@ -71,7 +72,7 @@ namespace HoloCube.QuestYOLO
 
             CreateText(root.transform, "Heading", "In-Device Local File Inference",
                 new Vector2(0, 370), new Vector2(1040, 56), 34, TextAnchor.MiddleCenter, true);
-            CreateText(root.transform, "Model", ModelName + " · YOLO26n · one class: Transmitter (the central pyramid)",
+            CreateText(root.transform, "Model", ModelName + " · then the Orientation Detection Model inside its box",
                 new Vector2(0, 324), new Vector2(1040, 40), 24, TextAnchor.MiddleCenter);
 
             var pictureObject = new GameObject("Picture", typeof(RectTransform), typeof(RawImage));
@@ -97,6 +98,19 @@ namespace HoloCube.QuestYOLO
             boxOutline.BorderColor = Maize;
             boxOutline.raycastTarget = false;
             outlineObject.SetActive(false);
+
+            // The orientation triangle is drawn over the picture in the same panel units:
+            // its origin is the picture's top-left corner, x to the right and y upward.
+            var triangleObject = new GameObject("Orientation Triangle", typeof(RectTransform), typeof(TriangleOutline));
+            triangleObject.transform.SetParent(picture.transform, false);
+            triangleOutline = triangleObject.GetComponent<TriangleOutline>();
+            triangleOutline.rectTransform.anchorMin = triangleOutline.rectTransform.anchorMax = new Vector2(0, 1);
+            triangleOutline.rectTransform.pivot = new Vector2(0, 1);
+            triangleOutline.rectTransform.sizeDelta = Vector2.zero;
+            triangleOutline.color = Maize;
+            triangleOutline.Thickness = 3f;
+            triangleOutline.raycastTarget = false;
+            triangleObject.SetActive(false);
 
             var labelObject = new GameObject("Box Label", typeof(RectTransform), typeof(Text));
             labelObject.transform.SetParent(picture.transform, false);
@@ -187,7 +201,13 @@ namespace HoloCube.QuestYOLO
                 RefreshText();
                 return;
             }
-            if (!more) running = null;
+            if (!more)
+            {
+                // Refresh only now: inside the run IsRunning is still true, so the text
+                // written there says "Running the model…" and would stay that way.
+                running = null;
+                RefreshText();
+            }
         }
 
         /// <summary>Stops a pending run so the camera path can use the worker again.</summary>
@@ -204,7 +224,13 @@ namespace HoloCube.QuestYOLO
             float started = Time.realtimeSinceStartup;
             List<Detection> result = null;
             var detection = detector.Detect(texture, confidence(), detections => result = detections);
-            while (detection.MoveNext()) yield return null;
+            // Cancel() disposes this iterator while it waits (another image picked, Run Again,
+            // or the page closed). The inner detection must be disposed with it: otherwise it
+            // stays "busy" for ever and its worker result is never collected, so every later
+            // run waits on "Running the model…". The orientation pass makes a run long enough
+            // for that to happen in normal use.
+            try { while (detection.MoveNext()) yield return null; }
+            finally { (detection as IDisposable)?.Dispose(); }
             float elapsed = Time.realtimeSinceStartup - started;
             LastDetections = result ?? new List<Detection>();
             lastOrientationRan = detector.LastOrientationRan;
@@ -223,6 +249,8 @@ namespace HoloCube.QuestYOLO
             Cancel();
             index = newIndex;
             LastDetections = null;
+            LastOrientation = null;
+            lastOrientationRan = false;
             lastRunMillis = -1;
             loadError = null;
             DrawBox(null);
@@ -261,18 +289,28 @@ namespace HoloCube.QuestYOLO
         private void DrawBox(List<Detection> detections)
         {
             bool show = detections != null && detections.Count > 0 && texture != null;
+            bool showTriangle = show && LastOrientation.HasValue;
             if (boxOutline.gameObject.activeSelf != show) boxOutline.gameObject.SetActive(show);
             if (boxLabel.gameObject.activeSelf != show) boxLabel.gameObject.SetActive(show);
+            if (triangleOutline.gameObject.activeSelf != showTriangle) triangleOutline.gameObject.SetActive(showTriangle);
             if (!show) return;
 
             var detection = detections[0];
             var imageSize = new Vector2Int(texture.width, texture.height);
+            if (showTriangle)
+            {
+                var orientation = LastOrientation.Value;
+                var fitted = picture.rectTransform.sizeDelta;
+                triangleOutline.SetCorners(ToPanelPoint(orientation.A, imageSize, fitted),
+                    ToPanelPoint(orientation.B, imageSize, fitted), ToPanelPoint(orientation.C, imageSize, fitted));
+            }
             Rect box = ToPanel(detection.Box, imageSize, picture.rectTransform.sizeDelta);
             boxOutline.rectTransform.anchoredPosition = new Vector2(box.x, box.y);
             boxOutline.rectTransform.sizeDelta = new Vector2(box.width, box.height);
             boxOutline.SetVerticesDirty();
             boxLabel.rectTransform.anchoredPosition = new Vector2(box.x, box.y + 6f);
-            boxLabel.text = $"Transmitter {detection.Confidence:P0}";
+            boxLabel.text = $"Transmitter {detection.Confidence:P0}" + (LastOrientation.HasValue
+                ? $"  ·  {LastOrientation.Value.Name} {LastOrientation.Value.Confidence:P0}" : string.Empty);
         }
 
         private void RefreshText()
@@ -299,23 +337,25 @@ namespace HoloCube.QuestYOLO
                 detail.text = IsRunning ? "Running the model…" : "Press A to run the model";
                 return;
             }
-            // The Orientation Detection Model runs on the same image after the transmitter.
-            // It runs only when a transmitter was detected, and counts only inside its box.
-            string direction = !lastOrientationRan ? string.Empty
-                : LastOrientation.HasValue ? $" · orientation {LastOrientation.Value.Name}" : " · no orientation inside the box";
-            string triangle = LastOrientation.HasValue ? OrientationDetail(LastOrientation.Value) : string.Empty;
             var detections = LastDetections;
             if (detections == null || detections.Count == 0)
             {
-                status.text = $"{name} {position} · {size} · no transmitter above {lastRunThreshold * 100f:0}%{direction} · {lastRunMillis} ms";
-                detail.text = triangle;
+                // Without a transmitter the Orientation Detection Model is not run.
+                status.text = $"{name} {position} · {size} · no transmitter above {lastRunThreshold * 100f:0}% · {lastRunMillis} ms";
+                detail.text = string.Empty;
                 return;
             }
             var detection = detections[0];
-            status.text = $"{name} {position} · {size} · {detections.Count} transmitter{direction} · {lastRunMillis} ms";
-            detail.text = $"Transmitter {detection.Confidence:P0} · box left {detection.Box.x:0}, top {detection.Box.y:0}, " +
-                $"right {detection.Box.z:0}, bottom {detection.Box.w:0} px" +
-                (triangle.Length > 0 ? "\n" + triangle : string.Empty);
+            status.text = $"{name} {position} · {size} · {detections.Count} transmitter · {lastRunMillis} ms";
+            // The detail row holds one line. The orientation model ran after the transmitter
+            // was found; its result counts only inside the transmitter's box.
+            if (LastOrientation.HasValue)
+                detail.text = $"Transmitter {detection.Confidence:P0} · " + OrientationDetail(LastOrientation.Value);
+            else if (lastOrientationRan)
+                detail.text = $"Transmitter {detection.Confidence:P0} · no orientation above {lastRunThreshold * 100f:0}% inside its box";
+            else
+                detail.text = $"Transmitter {detection.Confidence:P0} · box left {detection.Box.x:0}, top {detection.Box.y:0}, " +
+                    $"right {detection.Box.z:0}, bottom {detection.Box.w:0} px";
         }
 
         private void Scan()
@@ -363,7 +403,7 @@ namespace HoloCube.QuestYOLO
         }
 
         /// <summary>Android 13+ reads shared images with READ_MEDIA_IMAGES; Android 12 with READ_EXTERNAL_STORAGE.</summary>
-        /// <summary>"North 93% · triangle (x, y) (x, y) (x, y) px" in original image pixels.</summary>
+        /// <summary>"North 93 % · triangle (x, y) (x, y) (x, y) px" in original image pixels.</summary>
         public static string OrientationDetail(OrientationResult orientation) =>
             $"{orientation.Name} {orientation.Confidence:P0} · triangle ({orientation.A.x:0}, {orientation.A.y:0}) " +
             $"({orientation.B.x:0}, {orientation.B.y:0}) ({orientation.C.x:0}, {orientation.C.y:0}) px";
@@ -390,6 +430,13 @@ namespace HoloCube.QuestYOLO
         /// A YOLO box (left, top, right, bottom in image pixels, top-left origin) as a panel
         /// rectangle anchored to the picture's top-left corner: x to the right, y downwards (negative).
         /// </summary>
+        /// <summary>One image pixel in the picture's panel units: x right, y down as a negative value.</summary>
+        public static Vector2 ToPanelPoint(Vector2 pixel, Vector2Int image, Vector2 fitted)
+        {
+            float scale = image.x > 0 ? fitted.x / image.x : 0f;
+            return new Vector2(pixel.x * scale, -pixel.y * scale);
+        }
+
         public static Rect ToPanel(Vector4 box, Vector2Int image, Vector2 fitted)
         {
             float scale = image.x > 0 ? fitted.x / image.x : 0f;

@@ -109,6 +109,17 @@ namespace HoloCube.Editor
                 "Local file box mapping");
             Require(LocalFileInference.FitSize(new Vector2Int(0, 720), new Vector2(1040, 560)) == Vector2.zero,
                 "Local file empty image");
+            // The orientation triangle's corners use the same scale as the box.
+            var panelPoint = LocalFileInference.ToPanelPoint(new Vector2(640, 360), new Vector2Int(1280, 720), fitted);
+            Require(Mathf.Abs(panelPoint.x - 497.778f) < 0.01f && Mathf.Abs(panelPoint.y + 280f) < 0.01f, "Local file triangle corner mapping");
+            // In AR a corner keeps its place inside the transmitter's box: the box's top-left
+            // pixel is its upper-left corner, its centre is the origin, and y points up.
+            var arBox = new Vector4(100, 200, 300, 300);
+            var arSize = new Vector2(0.2f, 0.1f);
+            Require(DetectionOverlay.ToBox(new Vector2(200, 250), arBox, arSize) == Vector2.zero &&
+                Vector2.Distance(DetectionOverlay.ToBox(new Vector2(100, 200), arBox, arSize), new Vector2(-0.1f, 0.05f)) < 1e-5f &&
+                Vector2.Distance(DetectionOverlay.ToBox(new Vector2(300, 300), arBox, arSize), new Vector2(0.1f, -0.05f)) < 1e-5f,
+                "AR triangle corner mapping");
 
             // Orientation Detection Model: 5 rows of 12 values in 640 x 640 pixels. A 1920 x 1080
             // frame is scaled by one third with 140-pixel bands above and below.

@@ -1,5 +1,50 @@
 # HoloCube validation
 
+## 0.12: Local File Inference shows the orientation and its triangle — November 15, 2026
+
+- HoloCube **0.12 (code 12)** fixes two faults found on the Quest 3S with 0.11 and adds the
+  triangle:
+  - The Local File Inference panel stayed on "Running the model…" after a run. Both models
+    had run (the transmitter box was drawn and the log showed the orientation pass), but
+    the text was last written from inside the run, while it still counted as running.
+    `Advance` now refreshes it after the run ends.
+  - Picking another image, or pressing A, during a run disposed the outer run but not the
+    inner detection, leaving the worker marked busy for every later run. The orientation
+    pass makes runs long enough for this to happen in normal use. `Run` now disposes it.
+  - New `TriangleOutline` graphic: the orientation triangle is drawn over the picture on
+    the Local File Inference page and inside the transmitter's box in AR. The label over
+    the box and the detail line name the direction.
+
+### Passed on the development computer
+
+- `bash Tools/run-unity.sh Build`: `HOLOCUBE_VALIDATION_PASSED` (with new checks of the
+  triangle corner mapping for the panel and for AR), both package guards passed, `Build
+  Finished, Result: Success`; `aapt` confirms 0.12 / code 12. `Builds/HoloCube.apk`, SHA-256
+  `c1162de2dac703a8d0c6c74939adba8fdaa97b969c8cb14605b6553ad85f5537`.
+
+### Passed on the connected Quest 3S
+
+- Installed with `adb install -r`; the installed APK's SHA-256 matches the build.
+- Worn by the user, Settings → right trigger: `HOLOCUBE_LOCAL_FILES: 18 images found`,
+  transmitter pass, then `HOLOCUBE_ORIENTATION_CAMERA_FRAME: 5 orientation rows in 724 ms`
+  (728 ms on an earlier launch) and `HOLOCUBE_ORIENTATION_SINGLE_TRIANGLE: South selected
+  inside the transmitter box`.
+- A headset screenshot of `bright_static_frame_01468.jpg (4/18)` shows the transmitter box,
+  the triangle drawn on the pyramid inside it, the label `Transmitter 82 % · South 92 %`,
+  the status `1280 × 720 · 1 transmitter · 1034 ms`, and the detail `Transmitter 82 % ·
+  South 92 % · triangle (581, 261) (651, 261) (611, 339) px`. The user had moved through
+  several images to reach it, so the page no longer hangs after changing image.
+
+### Not verified
+
+- **AR:** the direction on the live label and the triangle inside the AR box have not been
+  seen with the transmitter in view.
+- Whether the named direction is right: the test images on the headset are headset
+  recordings without an orientation label, and the model was trained on phone footage.
+  Two images gave Southwest and South.
+
+---
+
 ## 0.11: transmitter first, orientation inside its box — November 15, 2026
 
 - HoloCube **0.11 (code 11)**: the Orientation Detection Model now runs only when the

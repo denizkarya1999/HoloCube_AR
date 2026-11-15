@@ -247,9 +247,9 @@ are visible. No box is shown if none meets the confidence threshold, which defau
 The Orientation Detection Model predicts eight classes, `0: North` clockwise to
 `7: Northwest` (`OrientationDetectionModel.ClassNames`). Only the strongest valid
 orientation above the same threshold is shown, and only when it lies inside the
-transmitter's box; without a transmitter box no orientation is shown. The headset shows the direction as
-text; the triangle's corners are computed and listed on the Local File Inference page but
-not drawn in AR.
+transmitter's box; without a transmitter box no orientation is shown. Since 0.12 the
+triangle is drawn over the picture on the Local File Inference page and inside the
+transmitter's box in AR, and the label reads `Transmitter  82 %  ·  South  92 %`.
 
 ### GitHub issue labels
 

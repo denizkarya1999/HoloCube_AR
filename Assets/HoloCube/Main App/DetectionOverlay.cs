@@ -20,6 +20,8 @@ namespace HoloCube.QuestYOLO
         [Tooltip("Seconds before an old overlay disappears.")]
         public float Lifetime = 0.5f;
 
+        private const string TriangleName = "Orientation Triangle";
+        private static readonly Color TriangleColor = new Color32(255, 203, 5, 255); // Maize.
         private readonly List<RectTransform> boxes = new();
         private float lastDrawTime;
 
@@ -51,13 +53,16 @@ namespace HoloCube.QuestYOLO
             foreach (var detection in detections)
             {
                 string text = $"{labels[detection.ClassId]}  {detection.Confidence:P0}";
-                // The orientation belongs to the same pyramid: show it on the transmitter's label.
-                if (direction != null) { text += "  ·  " + direction; direction = null; }
-                if (Place(detection.Box, text, imageSize, cameraPose, visibleBoxes)) visibleBoxes++;
+                // The orientation belongs to the same pyramid: name it on the transmitter's
+                // label and draw its triangle inside the transmitter's box.
+                OrientationResult? triangle = null;
+                if (direction != null) { text += "  ·  " + direction; direction = null; triangle = orientation; }
+                if (Place(detection.Box, text, imageSize, cameraPose, visibleBoxes, triangle)) visibleBoxes++;
             }
         }
 
-        private bool Place(Vector4 pixels, string text, Vector2Int imageSize, Pose cameraPose, int index)
+        private bool Place(Vector4 pixels, string text, Vector2Int imageSize, Pose cameraPose, int index,
+            OrientationResult? orientation)
         {
             var viewport = ToCameraViewport(pixels, imageSize);
             var centerRay = CameraAccess.ViewportPointToRay(viewport.center, cameraPose);
@@ -73,7 +78,50 @@ namespace HoloCube.QuestYOLO
             box.gameObject.SetActive(true);
             var label = box.GetComponentInChildren<Text>(true);
             label.text = text + (approximateDepth ? "  ~" : "");
+            DrawTriangle(box, pixels, size, orientation);
             return true;
+        }
+
+        // The triangle lies on the box's own plane: each corner keeps its place relative to the
+        // transmitter's rectangle in the image, so no second depth lookup is needed.
+        private static void DrawTriangle(RectTransform box, Vector4 pixels, Vector2 size, OrientationResult? orientation)
+        {
+            var existing = box.Find(TriangleName);
+            if (!orientation.HasValue)
+            {
+                if (existing != null) existing.gameObject.SetActive(false);
+                return;
+            }
+            TriangleOutline triangle;
+            if (existing != null) triangle = existing.GetComponent<TriangleOutline>();
+            else
+            {
+                var triangleObject = new GameObject(TriangleName, typeof(RectTransform), typeof(TriangleOutline));
+                triangleObject.layer = box.gameObject.layer;
+                triangleObject.transform.SetParent(box, false);
+                triangle = triangleObject.GetComponent<TriangleOutline>();
+                // Fill the box and measure from its centre.
+                triangle.rectTransform.anchorMin = Vector2.zero;
+                triangle.rectTransform.anchorMax = Vector2.one;
+                triangle.rectTransform.offsetMin = triangle.rectTransform.offsetMax = Vector2.zero;
+                triangle.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                triangle.color = TriangleColor;
+                triangle.raycastTarget = false;
+            }
+            triangle.gameObject.SetActive(true);
+            triangle.Thickness = Mathf.Max(size.x, size.y) * 0.03f;
+            triangle.SetCorners(ToBox(orientation.Value.A, pixels, size), ToBox(orientation.Value.B, pixels, size),
+                ToBox(orientation.Value.C, pixels, size));
+        }
+
+        /// <summary>An image pixel as a point in the box's own plane, measured from the box centre
+        /// (x right, y up) in the box's units. The image's y axis points down.</summary>
+        public static Vector2 ToBox(Vector2 pixel, Vector4 boxPixels, Vector2 boxSize)
+        {
+            float width = boxPixels.z - boxPixels.x, height = boxPixels.w - boxPixels.y;
+            if (width <= 0 || height <= 0) return Vector2.zero;
+            return new Vector2(((pixel.x - boxPixels.x) / width - 0.5f) * boxSize.x,
+                (0.5f - (pixel.y - boxPixels.y) / height) * boxSize.y);
         }
 
         private static Rect ToCameraViewport(Vector4 box, Vector2Int imageSize)

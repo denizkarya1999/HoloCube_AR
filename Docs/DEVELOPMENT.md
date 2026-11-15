@@ -127,8 +127,15 @@ runtime, so the saved scene needs no changes. It lists `.jpg`/`.jpeg`/`.png` fil
 file is decoded with `Texture2D.LoadImage` and sent through the same
 `TransmitterInference.Detect` path as a camera frame (GPU letterbox, Python worker,
 `DetectionFilter`), so the result is what the camera path would produce for that image.
-The orientation model then runs on the same image; its direction is added to the status
-line and its confidence and triangle corners (image pixels) to the detail line.
+When a transmitter is found, the orientation model then runs on the same image. Its
+triangle is drawn over the picture (`TriangleOutline`, corners through
+`LocalFileInference.ToPanelPoint`), the label over the box names the direction, and the
+detail line reads `Transmitter 82 % · South 92 % · triangle (x, y) (x, y) (x, y) px`.
+`Advance` refreshes the text after a run ends (inside the run `IsRunning` is still true),
+and `Run` disposes its inner detection when it is cancelled, so picking another image
+during a run cannot leave the worker marked busy. In AR, `DetectionOverlay` draws the same
+triangle inside the transmitter's box, each corner keeping its place relative to the box
+(`DetectionOverlay.ToBox`).
 While the page is open `MainApp` cancels the camera detection and advances the file run
 instead; leaving the page cancels the file run so the worker is free again. The box is
 drawn over the picture with `LocalFileInference.ToPanel`, which the Unity validation checks.
